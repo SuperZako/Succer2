@@ -59,6 +59,9 @@ declare class SoccerTeam {
     **/
     private createPlayers();
 }
+declare class SoccerPitch {
+    draw(): void;
+}
 declare class Game {
     private static instance;
     static getInstance(): Game;
@@ -67,6 +70,7 @@ declare class Game {
     state: State<Game>;
     ball: SoccerBall;
     controllingPlayers: ControllingPlayer[];
+    pitch: SoccerPitch;
     private constructor();
     get_controlled(side: number): PlayerBase;
     create_player(_i: number): void;
@@ -81,6 +85,15 @@ declare class Game {
 }
 declare var cnt: number;
 declare function animate(): void;
+declare class Region {
+    private left;
+    private top;
+    private right;
+    private bottom;
+    private width;
+    private height;
+    constructor(left: number, top: number, right: number, bottom: number);
+}
 declare namespace MathHelper {
     const EpsilonDouble = 0.000001;
     const Pi: number;
@@ -278,6 +291,8 @@ declare class KeeperStateRun extends State<GoalKeeper> {
     draw(f: FieldPlayer): void;
 }
 declare class GoalUp extends BaseGameEntity {
+    private leftPost;
+    private rightPost;
     constructor();
     draw(): void;
     drawshadow(): void;

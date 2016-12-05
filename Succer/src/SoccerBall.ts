@@ -37,7 +37,7 @@ class SoccerBall extends MovingEntity {
     public update() {
         let game = Game.getInstance();
 
-        let prevball = this.position.toVector2(); // { x: this.position.x, y: this.position.y };
+        let prevball = this.position.toVector2();
         //plus_in_place(this.position, this.velocity);
         this.position.add(this.velocity);
         let gravity = 0.1;
@@ -107,7 +107,7 @@ class SoccerBall extends MovingEntity {
             if (throwin.side * this.position.y < 0) {
                 throwin.init_throwin(CornerKick.getInstance(), new Vector2(fw2, fh2), { x: 1.1, y: 1.03 }, 5);
             } else {
-                throwin.init_throwin(Goalkick.getInstance(), new Vector2(/*rnd(penaltyw2)*/MathHelper.randInRange(0, penaltyw2), fh2_penaltyh), { x: 1, y: 1.15 }, 25);
+                throwin.init_throwin(Goalkick.getInstance(), new Vector2(MathHelper.randInRange(0, penaltyw2), fh2_penaltyh), { x: 1, y: 1.15 }, 25);
                 //--init_throwin(fstate_goalkick, { x=penaltyw2, y=fh2_penaltyh }, { x=1, y=1.15 }, 25)
             }
         }

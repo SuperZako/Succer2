@@ -90,6 +90,7 @@
     <TypeScriptCompile Include="built\succer.d.ts" />
     <TypeScriptCompile Include="src\app.ts" />
     <TypeScriptCompile Include="src\BaseGameEntity.ts" />
+    <TypeScriptCompile Include="src\common\Region.ts" />
     <TypeScriptCompile Include="src\ControllingPlayer.ts" />
     <TypeScriptCompile Include="src\FieldPlayer.ts" />
     <TypeScriptCompile Include="src\FieldPlayerStates\CornerKick.ts" />
@@ -119,6 +120,7 @@
     <TypeScriptCompile Include="src\PlayerBase.ts" />
     <TypeScriptCompile Include="src\Renderer.ts" />
     <TypeScriptCompile Include="src\SoccerBall.ts" />
+    <TypeScriptCompile Include="src\SoccerPitch.ts" />
     <TypeScriptCompile Include="src\SoccerTeam.ts" />
     <TypeScriptCompile Include="src\State.ts" />
     <TypeScriptCompile Include="src\succer.ts" />
@@ -127,6 +129,7 @@
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

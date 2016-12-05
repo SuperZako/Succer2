@@ -1,6 +1,8 @@
 ﻿
 class GoalUp extends BaseGameEntity {
-    //public y = -fh2;
+    private leftPost: Vector2;
+
+    private rightPost: Vector2;
 
     constructor() {
         super();

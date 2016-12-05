@@ -268,14 +268,27 @@ var SoccerTeam = (function () {
     };
     return SoccerTeam;
 }());
+var SoccerPitch = (function () {
+    function SoccerPitch() {
+    }
+    SoccerPitch.prototype.draw = function () {
+        for (var y = -fh2; y <= fh2 - 1; y += 32) {
+            rectfill(-fw2, y, fw2, y + 16, 3);
+            rectfill(-fw2, y + 16, fw2, y + 32, 11);
+        }
+    };
+    return SoccerPitch;
+}());
 /// <reference path="./SoccerBall.ts" />
 /// <reference path="./SoccerTeam.ts" />
+/// <reference path="./SoccerPitch.ts" />
 var Game = (function () {
     function Game() {
         this.demo = true;
         this.score = [0, 0];
         this.ball = new SoccerBall();
         this.controllingPlayers = [];
+        this.pitch = new SoccerPitch();
     }
     //this is a singleton
     Game.getInstance = function () {
@@ -441,10 +454,11 @@ var Game = (function () {
         camera();
         rectfill(0, 0, 127, 127, 3);
         camera(camtarget.x - 64, camtarget.y - 64);
-        for (var y = -fh2; y <= fh2 - 1; y += 32) {
-            rectfill(-fw2, y, fw2, y + 16, 3);
-            rectfill(-fw2, y + 16, fw2, y + 32, 11);
-        }
+        //for (let y = -fh2; y <= fh2 - 1; y += 32) {
+        //    rectfill(-fw2, y, fw2, y + 16, 3);
+        //    rectfill(-fw2, y + 16, fw2, y + 32, 11);
+        //}
+        this.pitch.draw();
         color(7);
         rect(-fw2, -fh2, fw2, fh2);
         line(-fw2, 0, fw2, 0);
@@ -552,6 +566,17 @@ window.onload = function () {
     //game = new Game();  
     animate();
 };
+var Region = (function () {
+    function Region(left, top, right, bottom) {
+        this.left = left;
+        this.top = top;
+        this.right = right;
+        this.bottom = bottom;
+        this.width = Math.abs(right - left);
+        this.height = Math.abs(bottom - top);
+    }
+    return Region;
+}());
 var MathHelper;
 (function (MathHelper) {
     MathHelper.EpsilonDouble = 1e-6;
@@ -1741,7 +1766,6 @@ var KeeperStateRun = (function (_super) {
 KeeperStateRun.instance = new KeeperStateRun();
 var GoalUp = (function (_super) {
     __extends(GoalUp, _super);
-    //public y = -fh2;
     function GoalUp() {
         var _this = _super.call(this) || this;
         _this.position.y = -fh2;
@@ -2293,16 +2317,6 @@ function damp(m) {
     //muls_in_place(m.velocity, m.damp)
     m.velocity.multiply(m.damp);
 }
-//function clampvec_getlen(v: IVector2 | IVector3, n: number) {
-//    let l = Math.sqrt(Vector2.dot(v, v));
-//    if (l > n) {
-//        //muls_in_place(v, n / l)
-//        v.x *= (n / l);
-//        v.y *= (n / l);
-//        l = n;
-//    }
-//    return l
-//}
 function side_to_idx(s) {
     //-- return flr((s + 1) / 2 + 1)
     //return ((matchtimer >= half_time ? - s : s) + 1) / 2;// + 1

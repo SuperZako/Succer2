@@ -1,6 +1,7 @@
 ﻿
 /// <reference path="./SoccerBall.ts" />
 /// <reference path="./SoccerTeam.ts" />
+/// <reference path="./SoccerPitch.ts" />
 
 class Game {
 
@@ -19,6 +20,7 @@ class Game {
 
     public controllingPlayers: ControllingPlayer[] = [];
 
+    public pitch = new SoccerPitch();
 
     private constructor() {
     }
@@ -209,10 +211,7 @@ class Game {
 
         camera(camtarget.x - 64, camtarget.y - 64);
 
-        for (let y = -fh2; y <= fh2 - 1; y += 32) {
-            rectfill(-fw2, y, fw2, y + 16, 3);
-            rectfill(-fw2, y + 16, fw2, y + 32, 11);
-        }
+        this.pitch.draw();
 
         color(7);
         rect(-fw2, -fh2, fw2, fh2);

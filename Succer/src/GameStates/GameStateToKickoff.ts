@@ -40,26 +40,6 @@ class GameStateToKickoff extends State<Game> {
         // --  if (to_exit) plus_in_place(camtarget, muls({ x=fw2, y=0 }, 1 - l))
 
         let allok = true;
-        //for (let m of men) {
-        //    let i = m.startposidx;
-        //    //--if not m.keeper then
-        //    let dest = to_exit ? { x: 1, y: 0 } : startpos[i];
-        //    //--    if 2* kickoff_team - 3 == m.side then
-        //    if (idx_to_side(kickoff_team) === m.side && !to_exit) {
-        //        if (i === 1) {
-        //            dest = { x: 0, y: 0.01 };
-        //        }
-        //        if (i === 2 || i === 3) {
-        //            dest = { x: dest.x, y: 0.02 };
-        //        }
-        //    }
-        //    let ok = m.run_to(dest.x * fw2, dest.y * m.side * fh2);
-        //    ok = ok && (m.vel < min_vel);
-        //    allok = ok && allok;
-        //    //--    if (ok) look_at(m, ball)
-        //    //--end
-        //}
-
         for (let team of teams) {
             for (let player of team.players) {
                 let i = player.startposidx;

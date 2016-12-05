@@ -11,8 +11,8 @@ class CornerKick extends State<FieldPlayer> {
 
     public start() {
         throwin.timer = 35;
-        throwin.player.position.x = throwin.pos.x;
-        throwin.player.position.y = throwin.pos.y;
+        throwin.player.position.x = throwin.position.x;
+        throwin.player.position.y = throwin.position.y;
         //muls_in_place(throwin_f.velocity, 0);
         throwin.player.velocity.set(Vector3.Zero);
     }

@@ -4,7 +4,7 @@ class FieldPlayerStateOK extends State<FieldPlayer> {
 
     private static instance = new FieldPlayerStateOK();
 
-    //this is a singleton
+    // this is a singleton
     public static getInstance() {
         return this.instance;
     }
@@ -13,7 +13,7 @@ class FieldPlayerStateOK extends State<FieldPlayer> {
     public ai(p: ControllingPlayer) {
         let game = Game.getInstance();
         let ball = game.ball;
-        let f = p.man;
+        let f = p.player;
         if (f === null) {
             return;
         }
@@ -31,7 +31,7 @@ class FieldPlayerStateOK extends State<FieldPlayer> {
                 let goal = { x: 0, y: f.side * fh2 };
                 if (dist_manh(goal, f.position) < 75) {
                     f.dir = Vector2.normalize(Vector2.subtract(goal, f.position.toVector2()));
-                    p.but = rnd(max_kick / 2) + max_kick / 3;
+                    p.but = /*rnd(max_kick / 2)*/MathHelper.randInRange(0, max_kick / 2) + max_kick / 3;
                     p.kick();
                     return;
                 }
@@ -55,11 +55,11 @@ class FieldPlayerStateOK extends State<FieldPlayer> {
 
     public input(p: ControllingPlayer) {
         let game = Game.getInstance();
-        if (p.man == null || (!game.isPlaying() && !game.is_throwin())) {
+        if (p.player == null || (!game.isPlaying() && !game.is_throwin())) {
             return;
         }
 
-        let man = p.man;
+        let man = p.player;
 
         if (btn(0, p.num)) {
             man.velocity.x -= vel_inc;

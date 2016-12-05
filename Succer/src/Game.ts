@@ -1,6 +1,5 @@
 ﻿
 /// <reference path="./SoccerBall.ts" />
-
 /// <reference path="./SoccerTeam.ts" />
 
 class Game {
@@ -25,7 +24,7 @@ class Game {
     }
 
     get_controlled(side: number) {
-        return this.controllingPlayers[side_to_idx(side)].man;
+        return this.controllingPlayers[side_to_idx(side)].player;
     }
 
 
@@ -43,41 +42,9 @@ class Game {
 
 
         music(0, 0, 6);
-        // this.create_player(0);
-        // this.create_player(1);
 
-        let fieldplayercount = 5;
-        for (let p = 0; p <= 1; ++p) {
-            let team = teams[p];
-            for (let i = 0; i < fieldplayercount; ++i) {
-                let man = new FieldPlayer(p, i); // create_footballer(p, i);
-                man.position.x = fw2;
-                man.position.y = 0;
-                //--			if (p == 0) man.y = -man.y
-                //add(men, man)
-
-                // men.push(man);
-                team.players.push(man);
-            }
-        }
-
-        // fieldplayercount += 1;
-        // this.controllingPlayers[0].man = men[0];
-        //this.controllingPlayers.push(new ControllingPlayer(men[0], 0));
         this.controllingPlayers.push(new ControllingPlayer(teams[0].players[0], 0));
-
-        // this.controllingPlayers[1].man = men[fieldplayercount];
-        //this.controllingPlayers.push(new ControllingPlayer(men[fieldplayercount], 1));
         this.controllingPlayers.push(new ControllingPlayer(teams[1].players[0], 0));
-
-        // add(men, create_keeper(0, fieldplayercount))
-        // men.push(new GoalKeeper(0, fieldplayercount));
-        teams[0].players.push(new GoalKeeper(0, fieldplayercount));
-
-
-        // add(men, create_keeper(1, fieldplayercount))
-        // men.push(new GoalKeeper(1, fieldplayercount));
-        teams[1].players.push(new GoalKeeper(1, fieldplayercount));
 
         this.start_match(true);
     }
@@ -104,9 +71,9 @@ class Game {
         matchtimer = 0;
         camlastpos = camtarget.clone();//copy(camtarget)
         scoring_team = 0;
-        starting_team = Math.floor(rnd(2));// + 1
+        starting_team = Math.floor(MathHelper.randInRange(0, 2));//Math.floor(rnd(2));// + 1
         kickoff_team = starting_team;
-        this.setState(GameStateToKickoff.getInstance())
+        this.setState(GameStateToKickoff.getInstance());
     }
 
     public update() {
@@ -197,7 +164,7 @@ class Game {
         ball.update();
 
         if (this.is_throwin()) {
-            this.controllingPlayers[side_to_idx(throwin.side)].man = throwin.player;
+            this.controllingPlayers[side_to_idx(throwin.side)].player = throwin.player;
         }
         if (this.state.update !== undefined) {
             this.state.update(this);
@@ -284,8 +251,8 @@ class Game {
             i.draw();
         }
 
-        draw_marker(this.controllingPlayers[0].man);
-        draw_marker(this.controllingPlayers[1].man);
+        draw_marker(this.controllingPlayers[0].player);
+        draw_marker(this.controllingPlayers[1].player);
 
         //-- for i in all(men) do
         //--line(i.x, i.y, i.x + 10 * i.dir.x, i.y + 10 * i.dir.y, 10)
@@ -305,9 +272,9 @@ class Game {
             print_outlined("half time", 47, 16, 7, 0);
         }
 
-        print_outlined(this.score[0].toString(), 116, 1, 12, 0)
+        print_outlined(this.score[0].toString(), 116, 1, 12, 0);
         print_outlined("-", 120, 1, 7, 0);
-        print_outlined(this.score[1].toString(), 124, 1, 8, 0)
+        print_outlined(this.score[1].toString(), 124, 1, 8, 0);
         if (this.demo) {
             menu_offset = Math.max(menu_offset / 2, 1);
         } else {

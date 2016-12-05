@@ -44,9 +44,14 @@ declare class SoccerBall extends MovingEntity {
     check_net(prevball: IVector2, goal1: IVector2, goal2: IVector2): void;
     update(): void;
 }
+declare enum TeamColor {
+    Blue = 0,
+    Red = 1,
+}
 declare class SoccerTeam {
+    color: TeamColor;
     players: PlayerBase[];
-    constructor();
+    constructor(color: TeamColor);
     /**
 
      * creates all the players for this team
@@ -82,6 +87,8 @@ declare namespace MathHelper {
     const PiOver2: number;
     const PiOver4: number;
     const TwoPi: number;
+    function lerp(a: number, b: number, percent: number): number;
+    function randInRange(a: number, b: number): number;
     function clamp(value: number, min: number, max: number): number;
 }
 declare abstract class PlayerBase extends MovingEntity {
@@ -123,11 +130,11 @@ declare abstract class PlayerBase extends MovingEntity {
     ball_thrown(): void;
 }
 declare class ControllingPlayer {
-    man: PlayerBase;
+    player: PlayerBase;
     num: number;
     but: number;
     ai: boolean;
-    constructor(man: PlayerBase, num: number, but?: number, ai?: boolean);
+    constructor(player: PlayerBase, num: number, but?: number, ai?: boolean);
     player_input(): void;
     tackle(): void;
     kick(): void;
@@ -315,7 +322,7 @@ declare class Vector2 implements IVector2 {
 declare namespace Renderer {
 }
 declare class Throwin {
-    pos: Vector2;
+    position: Vector2;
     ballpos: Vector2;
     timer: number;
     balld: Vector2;
@@ -330,7 +337,6 @@ declare class Throwin {
 declare let throwin: Throwin;
 declare function _print(_str: string, _x: number, _y: number, _col: number): void;
 declare function spr(n: number, x: number, y: number, _w?: number, _h?: number, _flip_x?: boolean, _flip_y?: boolean): void;
-declare function rnd(n: number): number;
 declare function btn(_i: number, _p?: number): boolean;
 declare function btnp(_i: number, _p?: number): boolean;
 declare function sfx(_n: number): void;

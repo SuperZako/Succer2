@@ -1,7 +1,7 @@
 ﻿/// <reference path="./PlayerBase.ts" />
 
 class ControllingPlayer {
-    constructor(public man: PlayerBase, public num: number, public but = 0, public ai = false) {
+    constructor(public player: PlayerBase, public num: number, public but = 0, public ai = false) {
     }
 
 
@@ -10,15 +10,15 @@ class ControllingPlayer {
         let game = Game.getInstance();
         if (this.ai || game.demo) {
             //if (this.man.getState().ai !== undefined)
-            this.man.getState().ai(this);
+            this.player.getState().ai(this);
         } else {
             //if (this.man.getState().input !== undefined)
-            this.man.getState().input(this);
+            this.player.getState().input(this);
         }
     }
 
     public tackle() {
-        this.man.set_state(Tackle.getInstance());
+        this.player.set_state(Tackle.getInstance());
     }
 
     public kick() {
@@ -26,23 +26,23 @@ class ControllingPlayer {
         //--pass
         let passed = false;
         if (this.but < 5) {
-            passed = this.man.pass();
+            passed = this.player.pass();
         }
 
         if (!passed) {
             let kickfactor = 1.0 + 0.1 * this.but;
             //plus_in_place(game.ball.velocity, muls(this.man.dir, kickfactor))
-            game.ball.velocity.add(Vector2.multiply(kickfactor, this.man.dir).toVector3());
+            game.ball.velocity.add(Vector2.multiply(kickfactor, this.player.dir).toVector3());
             Game.getInstance().ball.velocity.z += kickfactor * 0.5;
-            balllasttouchedside = this.man.side;
+            balllasttouchedside = this.player.side;
         }
 
-        this.man.justshot = 5;
+        this.player.justshot = 5;
         ballsfx();
     }
 
     public button_released() {
-        let f = this.man;
+        let f = this.player;
         if (f.can_kick()) {
             this.kick();
             balllasttouchedside = f.side;

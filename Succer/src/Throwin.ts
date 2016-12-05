@@ -2,7 +2,7 @@
 /// <reference path="./SoccerTeam.ts" />
 
 class Throwin {
-    public pos = new Vector2();
+    public position = new Vector2();
     public ballpos = new Vector2();
     public timer = 10;
     public balld = new Vector2();
@@ -33,8 +33,8 @@ class Throwin {
             this.ballpos.y *= -1;
         }
         //throwin.pos = mulv(throwin.ballpos, v);
-        this.pos.x = this.ballpos.x * v.x;
-        this.pos.y = this.ballpos.y * v.y;
+        this.position.x = this.ballpos.x * v.x;
+        this.position.y = this.ballpos.y * v.y;
 
         let idx = side_to_idx(this.side);
         if (t === Goalkick.getInstance()) {
@@ -42,9 +42,9 @@ class Throwin {
             this.player = teams[idx].players[5];
             this.player.set_state(KeeperStateRun.getInstance());
         } else {
-            this.player = game.controllingPlayers[idx].man;
+            this.player = game.controllingPlayers[idx].player;
         }
-        this.dist = Vector3.distance({ x: this.pos.x, y: this.pos.y, z: 0 }, this.player.position);
+        this.dist = Vector3.distance({ x: this.position.x, y: this.position.y, z: 0 }, this.player.position);
         camlastpos = camtarget.clone(); //copy(camtarget);
         game.setState(GameStateToBallout.getInstance());
         sfx(0);

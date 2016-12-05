@@ -1,7 +1,7 @@
 ﻿/// <reference path="./PlayerBase.ts" />
 
 class FieldPlayer extends PlayerBase {
-    state: State<FieldPlayer>;// = fstate_ok;
+    state: State<FieldPlayer>; // = fstate_ok;
 
     constructor(p: number, i: number) {
         super();

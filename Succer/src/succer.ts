@@ -49,10 +49,6 @@ function spr(n: number, x: number, y: number, _w = 0, _h = 0, _flip_x = false, _
 
 }
 
-function rnd(n: number) {
-    return Math.random() * n;
-}
-
 function btn(_i: number, _p?: number) {
     return true;
 }
@@ -296,8 +292,8 @@ function sprite_pos(f: PlayerBase) {
 
 //let men: PlayerBase[] = [];
 let teams: SoccerTeam[] = [];
-teams[0] = new SoccerTeam();
-teams[1] = new SoccerTeam();
+teams[0] = new SoccerTeam(TeamColor.Blue);
+teams[1] = new SoccerTeam(TeamColor.Red);
 
 let balllasttouchedside = 0;
 let dribble = new Vector2();//{ x: 0, y: 0 };
@@ -399,18 +395,6 @@ function damp(m: SoccerBall | PlayerBase) {
     m.velocity.multiply(m.damp);
 }
 
-
-//function clampvec_getlen(v: IVector2 | IVector3, n: number) {
-//    let l = Math.sqrt(Vector2.dot(v, v));
-//    if (l > n) {
-//        //muls_in_place(v, n / l)
-//        v.x *= (n / l);
-//        v.y *= (n / l);
-//        l = n;
-//    }
-//    return l
-//}
-
 function side_to_idx(s: number) {
     //-- return flr((s + 1) / 2 + 1)
     //return ((matchtimer >= half_time ? - s : s) + 1) / 2;// + 1
@@ -436,26 +420,13 @@ function distance_men_ball() {
                 if (game.isPlaying()) {
                     let p = side_to_idx(player.side);
                     if (d < nearestdist[p]) {
-                        game.controllingPlayers[p].man = player;
+                        game.controllingPlayers[p].player = player;
                         nearestdist[p] = d;
                     }
                 }
             }
         }
     }
-    //for (let m of men) {
-    //    if (!m.keeper && m.getState() !== Down.getInstance() && m.getState() !== Tackle.getInstance()) {
-    //        let d = dist_manh(m.position, ball.position);
-    //        m.ball_dist = d;
-    //        if (game.isPlaying()) {
-    //            let p = side_to_idx(m.side);
-    //            if (d < nearestdist[p]) {
-    //                game.controllingPlayers[p].man = m;
-    //                nearestdist[p] = d;
-    //            }
-    //        }
-    //    }
-    //}
 }
 
 var matchtimer: number;

@@ -141,7 +141,7 @@ var SoccerBall = (function (_super) {
     };
     SoccerBall.prototype.update = function () {
         var game = Game.getInstance();
-        var prevball = { x: this.position.x, y: this.position.y };
+        var prevball = this.position.toVector2(); // { x: this.position.x, y: this.position.y };
         //plus_in_place(this.position, this.velocity);
         this.position.add(this.velocity);
         var gravity = 0.1;
@@ -206,7 +206,7 @@ var SoccerBall = (function (_super) {
                 throwin.init_throwin(CornerKick.getInstance(), new Vector2(fw2, fh2), { x: 1.1, y: 1.03 }, 5);
             }
             else {
-                throwin.init_throwin(Goalkick.getInstance(), new Vector2(rnd(penaltyw2), fh2_penaltyh), { x: 1, y: 1.15 }, 25);
+                throwin.init_throwin(Goalkick.getInstance(), new Vector2(/*rnd(penaltyw2)*/ MathHelper.randInRange(0, penaltyw2), fh2_penaltyh), { x: 1, y: 1.15 }, 25);
             }
         }
         //--field borders
@@ -239,17 +239,33 @@ var SoccerBall = (function (_super) {
     };
     return SoccerBall;
 }(MovingEntity));
+var TeamColor;
+(function (TeamColor) {
+    TeamColor[TeamColor["Blue"] = 0] = "Blue";
+    TeamColor[TeamColor["Red"] = 1] = "Red";
+})(TeamColor || (TeamColor = {}));
 var SoccerTeam = (function () {
-    function SoccerTeam() {
+    function SoccerTeam(color) {
+        this.color = color;
         //pointers to the team members
         /*private*/ this.players = []; //new Array<PlayerBase>(5);
+        this.createPlayers();
     }
     /**
 
      * creates all the players for this team
 
     **/
-    SoccerTeam.prototype.createPlayers = function () { };
+    SoccerTeam.prototype.createPlayers = function () {
+        var fieldplayercount = 5;
+        for (var i = 0; i < fieldplayercount; ++i) {
+            var fieldPlayer = new FieldPlayer(this.color, i);
+            fieldPlayer.position.x = fw2;
+            fieldPlayer.position.y = 0;
+            this.players.push(fieldPlayer);
+        }
+        this.players.push(new GoalKeeper(this.color, fieldplayercount));
+    };
     return SoccerTeam;
 }());
 /// <reference path="./SoccerBall.ts" />
@@ -266,7 +282,7 @@ var Game = (function () {
         return this.instance;
     };
     Game.prototype.get_controlled = function (side) {
-        return this.controllingPlayers[side_to_idx(side)].man;
+        return this.controllingPlayers[side_to_idx(side)].player;
     };
     Game.prototype.create_player = function (_i) {
         //this.controllingPlayers.push(new ControllingPlayer(undefined, i));
@@ -277,34 +293,8 @@ var Game = (function () {
         canvas.height = 128;
         context = canvas.getContext('2d');
         music(0, 0, 6);
-        // this.create_player(0);
-        // this.create_player(1);
-        var fieldplayercount = 5;
-        for (var p = 0; p <= 1; ++p) {
-            var team = teams[p];
-            for (var i = 0; i < fieldplayercount; ++i) {
-                var man = new FieldPlayer(p, i); // create_footballer(p, i);
-                man.position.x = fw2;
-                man.position.y = 0;
-                //--			if (p == 0) man.y = -man.y
-                //add(men, man)
-                // men.push(man);
-                team.players.push(man);
-            }
-        }
-        // fieldplayercount += 1;
-        // this.controllingPlayers[0].man = men[0];
-        //this.controllingPlayers.push(new ControllingPlayer(men[0], 0));
         this.controllingPlayers.push(new ControllingPlayer(teams[0].players[0], 0));
-        // this.controllingPlayers[1].man = men[fieldplayercount];
-        //this.controllingPlayers.push(new ControllingPlayer(men[fieldplayercount], 1));
         this.controllingPlayers.push(new ControllingPlayer(teams[1].players[0], 0));
-        // add(men, create_keeper(0, fieldplayercount))
-        // men.push(new GoalKeeper(0, fieldplayercount));
-        teams[0].players.push(new GoalKeeper(0, fieldplayercount));
-        // add(men, create_keeper(1, fieldplayercount))
-        // men.push(new GoalKeeper(1, fieldplayercount));
-        teams[1].players.push(new GoalKeeper(1, fieldplayercount));
         this.start_match(true);
     };
     Game.prototype.setState = function (state) {
@@ -325,7 +315,7 @@ var Game = (function () {
         matchtimer = 0;
         camlastpos = camtarget.clone(); //copy(camtarget)
         scoring_team = 0;
-        starting_team = Math.floor(rnd(2)); // + 1
+        starting_team = Math.floor(MathHelper.randInRange(0, 2)); //Math.floor(rnd(2));// + 1
         kickoff_team = starting_team;
         this.setState(GameStateToKickoff.getInstance());
     };
@@ -413,7 +403,7 @@ var Game = (function () {
         }
         ball.update();
         if (this.is_throwin()) {
-            this.controllingPlayers[side_to_idx(throwin.side)].man = throwin.player;
+            this.controllingPlayers[side_to_idx(throwin.side)].player = throwin.player;
         }
         if (this.state.update !== undefined) {
             this.state.update(this);
@@ -487,8 +477,8 @@ var Game = (function () {
             var i = draw_list_2[_e];
             i.draw();
         }
-        draw_marker(this.controllingPlayers[0].man);
-        draw_marker(this.controllingPlayers[1].man);
+        draw_marker(this.controllingPlayers[0].player);
+        draw_marker(this.controllingPlayers[1].player);
         //-- for i in all(men) do
         //--line(i.x, i.y, i.x + 10 * i.dir.x, i.y + 10 * i.dir.y, 10)
         //-- end
@@ -569,6 +559,14 @@ var MathHelper;
     MathHelper.PiOver2 = Math.PI / 2; // πを 2 で割った値 (π/2) を表します。
     MathHelper.PiOver4 = Math.PI / 4; // πを 4 で割った値 (π/4) を表します。
     MathHelper.TwoPi = Math.PI * 2; // pi の 2 倍の値を表します。
+    function lerp(a, b, percent) {
+        return a + (b - a) * percent;
+    }
+    MathHelper.lerp = lerp;
+    function randInRange(a, b) {
+        return lerp(a, b, Math.random());
+    }
+    MathHelper.randInRange = randInRange;
     function clamp(value, min, max) {
         return Math.min(Math.max(value, min), max);
     }
@@ -584,7 +582,7 @@ var PlayerBase = (function (_super) {
         _this.w = 4;
         _this.h = 8;
         _this.vel = 0;
-        _this.dir = new Vector2(0, 1); //{ x: 0, y: 1 };
+        _this.dir = new Vector2(0, 1); // { x: 0, y: 1 };
         //prevdir={ x = 0, y = 1 },
         _this.lastspr = 4;
         _this.hasball = false;
@@ -595,7 +593,7 @@ var PlayerBase = (function (_super) {
         _this.justshot = 0;
         _this.ball_dist = max_val;
         _this.keeper = false;
-        _this.skin = Math.floor(rnd(skincolors.length)) /*+ 1*/;
+        _this.skin = Math.floor(/*rnd(skincolors.length)*/ MathHelper.randInRange(0, skincolors.length)) /*+ 1*/;
         return _this;
     }
     PlayerBase.prototype.update = function () {
@@ -642,7 +640,8 @@ var PlayerBase = (function (_super) {
         var game = Game.getInstance();
         var ball = game.ball;
         var x = this.position.x;
-        return (x - dist < ball.position.x && ball.position.x < x + dist && this.position.y - dist < ball.position.y && ball.position.y < this.position.y + dist && ball.position.z < 8);
+        var toBall = Vector3.subtract(ball.position, this.position);
+        return dist >= toBall.length();
     };
     PlayerBase.prototype.pass = function () {
         var game = Game.getInstance();
@@ -651,27 +650,6 @@ var PlayerBase = (function (_super) {
         //-- in the right direction
         var maxd = 0;
         var target = undefined;
-        //for (let m of men) {
-        //    if (m.side === this.side && !m.keeper && m !== this) {
-        //        let front = 20
-        //        let futm = Vector3.add(m.position, Vector3.multiply(front, m.velocity));
-        //        let dist = Vector3.distance(this.position, { x: futm.x, y: futm.y, z: 0 });
-        //        if (dist < 96) {
-        //            let relpos = Vector3.subtract(futm, this.position);
-        //            let dir = Vector2.multiply(1 / dist, relpos);
-        //            let dirw = Vector2.dot(this.dir, dir);
-        //            if (dirw > sin22_5) {
-        //                let distw = MathHelper.clamp(-dist / 32 + 2, 0, 1);
-        //                let w = dirw * distw;
-        //                //--todo: add obstruction consideration
-        //                if (w > maxd && this.is_pass_ok(relpos, dist, dir)) {
-        //                    maxd = w;
-        //                    target = dir;
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
         for (var _i = 0, teams_6 = teams; _i < teams_6.length; _i++) {
             var team = teams_6[_i];
             for (var _a = 0, _b = team.players; _a < _b.length; _a++) {
@@ -713,12 +691,14 @@ var PlayerBase = (function (_super) {
         }
         var tmp = this.position.x + this.velocity.x * steps;
         if (this.position.x < x) {
-            if (tmp < x)
+            if (tmp < x) {
                 this.velocity.x += vel_inc;
+            }
         }
         else {
-            if (tmp > x)
+            if (tmp > x) {
                 this.velocity.x -= vel_inc;
+            }
         }
         tmp = this.position.y + this.velocity.y * steps;
         if (this.position.y < y) {
@@ -778,24 +758,13 @@ var PlayerBase = (function (_super) {
         var prevball = ball.position.clone();
         ball.position.multiply(0.8);
         //plus_in_place(ball.position, muls(plus(this.position, muls(this.dir, 3)), 0.2))//-- + lerp to wanted_ball
-        ball.position.add(Vector3.multiply(0.2, Vector3.add(this.position, Vector2.multiply(3, this.dir).toVector3()))); //-- + lerp to wanted_ball
+        ball.position.add(Vector3.multiply(0.2, Vector3.add(this.position, Vector2.multiply(3, this.dir).toVector3()))); // -- + lerp to wanted_ball
     };
     PlayerBase.prototype.is_pass_ok = function (_relpos, dist, dir) {
         var game = Game.getInstance();
         if (game.is_throwin()) {
             return true;
         }
-        //for (let m of men) {
-        //    let side = (m.side !== this.side);
-        //    if (side) {
-        //        let relpos2 = Vector3.subtract(m.position, this.position);
-        //        let dist2 = Math.max(Math.sqrt(Vector2.dot(relpos2, relpos2)), 1);
-        //        let dir2 = { x: relpos2.x / dist2, y: relpos2.y / dist2 };
-        //        if (Vector2.dot(dir, dir2) > cos22_5 && dist2 / dist < 1.1) {
-        //            return false;
-        //        }
-        //    }
-        //}
         for (var _i = 0, teams_7 = teams; _i < teams_7.length; _i++) {
             var team = teams_7[_i];
             for (var _a = 0, _b = team.players; _a < _b.length; _a++) {
@@ -846,10 +815,10 @@ var PlayerBase = (function (_super) {
 }(MovingEntity));
 /// <reference path="./PlayerBase.ts" />
 var ControllingPlayer = (function () {
-    function ControllingPlayer(man, num, but, ai) {
+    function ControllingPlayer(player, num, but, ai) {
         if (but === void 0) { but = 0; }
         if (ai === void 0) { ai = false; }
-        this.man = man;
+        this.player = player;
         this.num = num;
         this.but = but;
         this.ai = ai;
@@ -858,35 +827,35 @@ var ControllingPlayer = (function () {
         var game = Game.getInstance();
         if (this.ai || game.demo) {
             //if (this.man.getState().ai !== undefined)
-            this.man.getState().ai(this);
+            this.player.getState().ai(this);
         }
         else {
             //if (this.man.getState().input !== undefined)
-            this.man.getState().input(this);
+            this.player.getState().input(this);
         }
     };
     ControllingPlayer.prototype.tackle = function () {
-        this.man.set_state(Tackle.getInstance());
+        this.player.set_state(Tackle.getInstance());
     };
     ControllingPlayer.prototype.kick = function () {
         var game = Game.getInstance();
         //--pass
         var passed = false;
         if (this.but < 5) {
-            passed = this.man.pass();
+            passed = this.player.pass();
         }
         if (!passed) {
             var kickfactor = 1.0 + 0.1 * this.but;
             //plus_in_place(game.ball.velocity, muls(this.man.dir, kickfactor))
-            game.ball.velocity.add(Vector2.multiply(kickfactor, this.man.dir).toVector3());
+            game.ball.velocity.add(Vector2.multiply(kickfactor, this.player.dir).toVector3());
             Game.getInstance().ball.velocity.z += kickfactor * 0.5;
-            balllasttouchedside = this.man.side;
+            balllasttouchedside = this.player.side;
         }
-        this.man.justshot = 5;
+        this.player.justshot = 5;
         ballsfx();
     };
     ControllingPlayer.prototype.button_released = function () {
-        var f = this.man;
+        var f = this.player;
         if (f.can_kick()) {
             this.kick();
             balllasttouchedside = f.side;
@@ -954,8 +923,8 @@ var CornerKick = (function (_super) {
     };
     CornerKick.prototype.start = function () {
         throwin.timer = 35;
-        throwin.player.position.x = throwin.pos.x;
-        throwin.player.position.y = throwin.pos.y;
+        throwin.player.position.x = throwin.position.x;
+        throwin.player.position.y = throwin.position.y;
         //muls_in_place(throwin_f.velocity, 0);
         throwin.player.velocity.set(Vector3.Zero);
     };
@@ -1044,14 +1013,14 @@ var FieldPlayerStateOK = (function (_super) {
     function FieldPlayerStateOK() {
         return _super.apply(this, arguments) || this;
     }
-    //this is a singleton
+    // this is a singleton
     FieldPlayerStateOK.getInstance = function () {
         return this.instance;
     };
     FieldPlayerStateOK.prototype.ai = function (p) {
         var game = Game.getInstance();
         var ball = game.ball;
-        var f = p.man;
+        var f = p.player;
         if (f === null) {
             return;
         }
@@ -1067,7 +1036,7 @@ var FieldPlayerStateOK = (function (_super) {
                 var goal = { x: 0, y: f.side * fh2 };
                 if (dist_manh(goal, f.position) < 75) {
                     f.dir = Vector2.normalize(Vector2.subtract(goal, f.position.toVector2()));
-                    p.but = rnd(max_kick / 2) + max_kick / 3;
+                    p.but = MathHelper.randInRange(0, max_kick / 2) + max_kick / 3;
                     p.kick();
                     return;
                 }
@@ -1091,10 +1060,10 @@ var FieldPlayerStateOK = (function (_super) {
     };
     FieldPlayerStateOK.prototype.input = function (p) {
         var game = Game.getInstance();
-        if (p.man == null || (!game.isPlaying() && !game.is_throwin())) {
+        if (p.player == null || (!game.isPlaying() && !game.is_throwin())) {
             return;
         }
-        var man = p.man;
+        var man = p.player;
         if (btn(0, p.num)) {
             man.velocity.x -= vel_inc;
         }
@@ -1222,15 +1191,15 @@ var FieldPlayerStateThrowin = (function (_super) {
     };
     FieldPlayerStateThrowin.prototype.start = function () {
         throwin.timer = 35;
-        throwin.player.position.x = throwin.pos.x;
-        throwin.player.position.y = throwin.pos.y;
+        throwin.player.position.x = throwin.position.x;
+        throwin.player.position.y = throwin.position.y;
         //muls_in_place(throwin_f.velocity, 0)
         throwin.player.velocity = Vector3.Zero; //.multiply(0);
     };
     FieldPlayerStateThrowin.prototype.ai = function (p) {
         var game = Game.getInstance();
         var ball = game.ball;
-        var f = p.man;
+        var f = p.player;
         var dy = 0;
         if (ball.position.y * f.side > 0) {
             dy = -2;
@@ -1263,11 +1232,11 @@ var FieldPlayerStateThrowin = (function (_super) {
         if ((btn(0, p.num) || btn(1, p.num))) {
             dy /= 2;
         }
-        p.man.lastspr = 2 + dy;
+        p.player.lastspr = 2 + dy;
         if (btn(4, p.num)) {
             //--if (not pass(p.man)) throw_in(dy)
             game.throw_in(dy);
-            p.man.ball_thrown();
+            p.player.ball_thrown();
         }
     };
     FieldPlayerStateThrowin.prototype.draw = function (f) {
@@ -1402,9 +1371,9 @@ var GameStateToBallout = (function (_super) {
     };
     GameStateToBallout.prototype.update = function (game) {
         //-- todo : tout le monde se met en place
-        var l = Vector3.distance(throwin.player.position, { x: throwin.pos.x, y: throwin.pos.y, z: 0 }) / throwin.dist;
+        var l = Vector3.distance(throwin.player.position, { x: throwin.position.x, y: throwin.position.y, z: 0 }) / throwin.dist;
         camtarget = Vector2.add(Vector2.multiply(1 - l, throwin.ballpos), Vector2.multiply(l, camlastpos));
-        if (throwin.player.go_to(throwin.pos.x, throwin.pos.y, 2, 10)) {
+        if (throwin.player.go_to(throwin.position.x, throwin.position.y, 2, 10)) {
             game.setState(GameStateBallin.getInstance());
         }
     };
@@ -1449,25 +1418,6 @@ var GameStateToKickoff = (function (_super) {
         var to_exit = matchtimer > full_time;
         // --  if (to_exit) plus_in_place(camtarget, muls({ x=fw2, y=0 }, 1 - l))
         var allok = true;
-        //for (let m of men) {
-        //    let i = m.startposidx;
-        //    //--if not m.keeper then
-        //    let dest = to_exit ? { x: 1, y: 0 } : startpos[i];
-        //    //--    if 2* kickoff_team - 3 == m.side then
-        //    if (idx_to_side(kickoff_team) === m.side && !to_exit) {
-        //        if (i === 1) {
-        //            dest = { x: 0, y: 0.01 };
-        //        }
-        //        if (i === 2 || i === 3) {
-        //            dest = { x: dest.x, y: 0.02 };
-        //        }
-        //    }
-        //    let ok = m.run_to(dest.x * fw2, dest.y * m.side * fh2);
-        //    ok = ok && (m.vel < min_vel);
-        //    allok = ok && allok;
-        //    //--    if (ok) look_at(m, ball)
-        //    //--end
-        //}
         for (var _i = 0, teams_8 = teams; _i < teams_8.length; _i++) {
             var team = teams_8[_i];
             for (var _a = 0, _b = team.players; _a < _b.length; _a++) {
@@ -1623,8 +1573,8 @@ var Goalkick = (function (_super) {
     };
     Goalkick.prototype.start = function () {
         throwin.timer = 35;
-        throwin.player.position.x = throwin.pos.x;
-        throwin.player.position.y = throwin.pos.y;
+        throwin.player.position.x = throwin.position.x;
+        throwin.player.position.y = throwin.position.y;
         //muls_in_place(throwin_f.velocity, 0)
         throwin.player.velocity.multiply(0);
     };
@@ -1933,7 +1883,7 @@ var Renderer;
 /// <reference path="./SoccerTeam.ts" />
 var Throwin = (function () {
     function Throwin() {
-        this.pos = new Vector2();
+        this.position = new Vector2();
         this.ballpos = new Vector2();
         this.timer = 10;
         this.balld = new Vector2();
@@ -1954,8 +1904,8 @@ var Throwin = (function () {
             this.ballpos.y *= -1;
         }
         //throwin.pos = mulv(throwin.ballpos, v);
-        this.pos.x = this.ballpos.x * v.x;
-        this.pos.y = this.ballpos.y * v.y;
+        this.position.x = this.ballpos.x * v.x;
+        this.position.y = this.ballpos.y * v.y;
         var idx = side_to_idx(this.side);
         if (t === Goalkick.getInstance()) {
             // this.player = men[men.length + idx - 2]; //keeper
@@ -1963,9 +1913,9 @@ var Throwin = (function () {
             this.player.set_state(KeeperStateRun.getInstance());
         }
         else {
-            this.player = game.controllingPlayers[idx].man;
+            this.player = game.controllingPlayers[idx].player;
         }
-        this.dist = Vector3.distance({ x: this.pos.x, y: this.pos.y, z: 0 }, this.player.position);
+        this.dist = Vector3.distance({ x: this.position.x, y: this.position.y, z: 0 }, this.player.position);
         camlastpos = camtarget.clone(); //copy(camtarget);
         game.setState(GameStateToBallout.getInstance());
         sfx(0);
@@ -2016,9 +1966,6 @@ function spr(n, x, y, _w, _h, _flip_x, _flip_y) {
             rectfill(x, y, x + 8, y + 8, 7);
             break;
     }
-}
-function rnd(n) {
-    return Math.random() * n;
 }
 function btn(_i, _p) {
     return true;
@@ -2261,8 +2208,8 @@ function sprite_pos(f) {
 }
 //let men: PlayerBase[] = [];
 var teams = [];
-teams[0] = new SoccerTeam();
-teams[1] = new SoccerTeam();
+teams[0] = new SoccerTeam(TeamColor.Blue);
+teams[1] = new SoccerTeam(TeamColor.Red);
 var balllasttouchedside = 0;
 var dribble = new Vector2(); //{ x: 0, y: 0 };
 var dribblen = 0;
@@ -2379,26 +2326,13 @@ function distance_men_ball() {
                 if (game.isPlaying()) {
                     var p = side_to_idx(player.side);
                     if (d < nearestdist[p]) {
-                        game.controllingPlayers[p].man = player;
+                        game.controllingPlayers[p].player = player;
                         nearestdist[p] = d;
                     }
                 }
             }
         }
     }
-    //for (let m of men) {
-    //    if (!m.keeper && m.getState() !== Down.getInstance() && m.getState() !== Tackle.getInstance()) {
-    //        let d = dist_manh(m.position, ball.position);
-    //        m.ball_dist = d;
-    //        if (game.isPlaying()) {
-    //            let p = side_to_idx(m.side);
-    //            if (d < nearestdist[p]) {
-    //                game.controllingPlayers[p].man = m;
-    //                nearestdist[p] = d;
-    //            }
-    //        }
-    //    }
-    //}
 }
 var matchtimer;
 var camlastpos;

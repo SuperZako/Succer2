@@ -11,15 +11,15 @@ class FieldPlayerStateThrowin extends State<FieldPlayer> {
 
     public start() {
         throwin.timer = 35;
-        throwin.player.position.x = throwin.pos.x;
-        throwin.player.position.y = throwin.pos.y;
+        throwin.player.position.x = throwin.position.x;
+        throwin.player.position.y = throwin.position.y;
         //muls_in_place(throwin_f.velocity, 0)
         throwin.player.velocity = Vector3.Zero;//.multiply(0);
     }
     public ai(p: ControllingPlayer) {
         let game = Game.getInstance();
         let ball = game.ball;
-        let f = p.man;
+        let f = p.player;
         let dy = 0;
         if (ball.position.y * f.side > 0) {
             dy = -2;
@@ -52,11 +52,11 @@ class FieldPlayerStateThrowin extends State<FieldPlayer> {
         if ((btn(0, p.num) || btn(1, p.num))) {
             dy /= 2;
         }
-        p.man.lastspr = 2 + dy;
+        p.player.lastspr = 2 + dy;
         if (btn(4, p.num)) {
             //--if (not pass(p.man)) throw_in(dy)
             game.throw_in(dy);
-            p.man.ball_thrown();
+            p.player.ball_thrown();
         }
     }
     public draw(f: FieldPlayer) {
@@ -68,7 +68,7 @@ class FieldPlayerStateThrowin extends State<FieldPlayer> {
         spr(48 + f.lastspr, pos.x, pos.y, 1, 1, f.lastflip);
         ball.position.x = f.position.x;
         ball.position.y = f.position.y;
-        ball.position.z = 7
-        ball.velocity.z = 0
+        ball.position.z = 7;
+        ball.velocity.z = 0;
     }
 }

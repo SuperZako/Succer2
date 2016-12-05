@@ -20,9 +20,13 @@ class Game {
 
     public controllingPlayers: ControllingPlayer[] = [];
 
-    public pitch = new SoccerPitch();
+    private pitch = new SoccerPitch(256, 384);
 
     private constructor() {
+    }
+
+    public getPitch() {
+        return this.pitch;
     }
 
     get_controlled(side: number) {
@@ -211,14 +215,20 @@ class Game {
 
         camera(camtarget.x - 64, camtarget.y - 64);
 
-        this.pitch.draw();
+        let pitch = this.pitch;
+        let left = pitch.left;
+        let bottom = pitch.bottom;
+        let right = pitch.right;
+        let top = pitch.top;
+
+        pitch.draw();
 
         color(7);
-        rect(-fw2, -fh2, fw2, fh2);
-        line(-fw2, 0, fw2, 0);
+        rect(left, bottom, right, top);
+        line(left, 0, right, 0);
 
-        rect(-penaltyw2, -fh2, penaltyw2, -fh2_penaltyh);
-        rect(-penaltyw2, fh2, penaltyw2, fh2_penaltyh);
+        rect(-penaltyw2, bottom, penaltyw2, -fh2_penaltyh);
+        rect(-penaltyw2, top, penaltyw2, fh2_penaltyh);
 
         circ(0, 0, 30);
 

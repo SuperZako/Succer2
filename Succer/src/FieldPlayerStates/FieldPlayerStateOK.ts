@@ -13,6 +13,7 @@ class FieldPlayerStateOK extends State<FieldPlayer> {
     public ai(p: ControllingPlayer) {
         let game = Game.getInstance();
         let ball = game.ball;
+        let pitch = game.getPitch();
         let f = p.player;
         if (f === null) {
             return;
@@ -28,7 +29,7 @@ class FieldPlayerStateOK extends State<FieldPlayer> {
 
             if ((f.hasball || f.run_to(ball.position.x, ball.position.y)) && ball.position.z < 8 && f.justshot <= 0) {
                 //-- try to shoot
-                let goal = { x: 0, y: f.side * fh2 };
+                let goal = { x: 0, y: f.side * pitch.top };
                 if (dist_manh(goal, f.position) < 75) {
                     f.dir = Vector2.normalize(Vector2.subtract(goal, f.position.toVector2()));
                     p.but = /*rnd(max_kick / 2)*/MathHelper.randInRange(0, max_kick / 2) + max_kick / 3;
@@ -113,6 +114,8 @@ class FieldPlayerStateOK extends State<FieldPlayer> {
 
     public update(f: FieldPlayer) {
         let game = Game.getInstance();
+        let pitch = game.getPitch();
+        let top = pitch.top;
         if (game.isPlaying()) {
             f.findpos();
         }
@@ -124,7 +127,7 @@ class FieldPlayerStateOK extends State<FieldPlayer> {
                 f.findpos2({ x: 0, y: 0 });
             }
             if (throwin.type === CornerKick.getInstance()) {
-                f.findpos2({ x: 0, y: fh2 * throwin.side });
+                f.findpos2({ x: 0, y: top * throwin.side });
             }
         }
     }

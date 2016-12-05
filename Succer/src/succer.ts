@@ -166,12 +166,12 @@ let max_val = 32767;
 let cos22_5 = 0.9239;
 let sin22_5 = 0.3827;
 
-const fh = 384;
-const fw = 256;
-const fh2 = fh / 2;
-const fw2 = fw / 2;
+// const fh = 384;
+// const fw = 256;
+// const fh2 = fh / 2;
+// const fw2 = fw / 2;
 let penaltyw2 = 64;
-let fh2_penaltyh = fh2 - 60;
+let fh2_penaltyh = /*fh2*/Game.getInstance().getPitch().top - 60;
 let goalw = 60;
 let goalh = 20;
 let goall = 10;
@@ -190,7 +190,7 @@ let skincolors = [[4, 5, 0], [15, 14, 4], [15, 14, 4], [15, 14, 9]];
 let max_kick = 20;
 let dribbledist = 4;
 
-let camtarget = new Vector2(fw2, 0);//{ x: fw2, y: 0 };
+let camtarget = new Vector2(/*fw2*/Game.getInstance().getPitch().right, 0);
 
 let startpos: IVector2[] = [
     { x: 0, y: 0.2 },
@@ -357,12 +357,15 @@ function check_post(p: IVector2, prevball: IVector2) {
 function update_cam() {
     let game = Game.getInstance();
     let ball = game.ball;
+    let pitch = game.getPitch();
+    let right = pitch.right;
+    let top = pitch.top;
     if (game.isPlaying()) {
         camtarget = ball.position.toVector2();
     }
 
-    let bx = fw2 + border - 64;
-    let by = fh2 + border - 64;
+    let bx = right + border - 64;
+    let by = top + border - 64;
     camtarget.x = Math.floor(MathHelper.clamp(camtarget.x, -bx, bx))
     camtarget.y = Math.floor(MathHelper.clamp(camtarget.y, -by, by))
 }

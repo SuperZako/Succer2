@@ -5,13 +5,15 @@ class GoalKeeper extends PlayerBase {
 
     constructor(p: number, i: number) {
         super();
-
+        let game = Game.getInstance();
+        let pitch = game.getPitch();
+        let height = pitch.height;
         this.startposidx = i;
         this.side = p * 2 - 1;
         //this.teamcolors = p + 1;
 
         this.state = KeeperStateOk.getInstance();
-        this.position.y = (p - 0.5) * (fh - 8);
+        this.position.y = (p - 0.5) * (height - 8);
         this.keeper = true;
         this.teamcolors = 0;
     }

@@ -38,6 +38,9 @@ abstract class PlayerBase extends MovingEntity {
 
     public update() {
         let game = Game.getInstance();
+        let pitch = game.getPitch();
+        let right = pitch.right;
+        let top = pitch.top;
         //--update state : draw, input or ai
         if (this.getState().update !== undefined) {
             this.getState().update(this);
@@ -46,11 +49,11 @@ abstract class PlayerBase extends MovingEntity {
         //--update position & check borders
         let newposx = this.position.x + this.velocity.x
         let newposy = this.position.y + this.velocity.y
-        if (Math.abs(newposx) > fw2 + border) {
+        if (Math.abs(newposx) > right + border) {
             newposx = this.position.x;
             this.velocity.x = 0;
         }
-        if (Math.abs(newposy) > fh2 + border) {
+        if (Math.abs(newposy) > top + border) {
             newposy = this.position.y;
             this.velocity.y = 0;
         }
@@ -188,6 +191,11 @@ abstract class PlayerBase extends MovingEntity {
 
     public findpos2(t: IVector2) {
         let game = Game.getInstance();
+        let pitch = game.getPitch();
+        let top = pitch.top;
+        let left = pitch.left;
+        let right = pitch.right;
+        let bottom = pitch.bottom;
         if (this === throwin.player) {
             return;
         }
@@ -198,11 +206,11 @@ abstract class PlayerBase extends MovingEntity {
             sid = -0.5;
         }
 
-        let x = sid * dest.x * fw2 + t.x / 2;
+        let x = sid * dest.x * right + t.x / 2;
         //--x = clampsym(x, is_throwin() and fw2/ 2 or fw2)
-        x = MathHelper.clamp(x, -fw2, fw2);
-        let y = this.side * dest.y * fh2 + t.y;
-        y = MathHelper.clamp(y, -fh2 * 0.8, fh2 * 0.8);
+        x = MathHelper.clamp(x, left, right);
+        let y = this.side * dest.y * top + t.y;
+        y = MathHelper.clamp(y, bottom * 0.8, top * 0.8);
         this.run_to(x, y);
     }
 

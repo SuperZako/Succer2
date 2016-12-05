@@ -6,12 +6,23 @@ class GoalUp extends BaseGameEntity {
 
     constructor() {
         super();
-        this.position.y = -fh2;
+        let game = Game.getInstance();
+        let pitch = game.getPitch();
+        let bottom = pitch.bottom;
+
+        this.position.y = bottom;
     }
 
     public draw() {
+        let game = Game.getInstance();
+        let pitch = game.getPitch();
+        let top = pitch.top;
+        let left = pitch.left;
+        let right = pitch.right;
+        let bottom = pitch.bottom;
+
         let clipstartx = goalx1 - camtarget.x + 1 + 64;
-        let clipstarty = -camtarget.y + 64 - fh2;
+        let clipstarty = -camtarget.y + 64 - top;
         let clipendx = goalx2 - goalx1;
         let clipendy = goalh / 2 + 1;
         //spr(60, goalx2, -fh2 - 17)
@@ -28,10 +39,10 @@ class GoalUp extends BaseGameEntity {
             }
         }
         clip();
-        let a = -goall - fh2;
-        line(goalx1, a, goalx1, -fh2);
+        let a = -goall - top;
+        line(goalx1, a, goalx1, bottom);
         line(goalx1, a, goalx2, a);
-        line(goalx2, a, goalx2, -fh2);
+        line(goalx2, a, goalx2, bottom);
     }
 
     public drawshadow() {

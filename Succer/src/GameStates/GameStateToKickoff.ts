@@ -31,6 +31,10 @@ class GameStateToKickoff extends State<Game> {
     }
 
     public update(game: Game) {
+        let pitch = game.getPitch();
+        let right = pitch.right;
+        let top = pitch.top;
+
         // -- scroll to the center of the field
         let l = Math.max(this.timer / 60, 0);
         camtarget = Vector2.multiply(l, camlastpos);//muls(camlastpos, l);
@@ -54,7 +58,7 @@ class GameStateToKickoff extends State<Game> {
                         dest = { x: dest.x, y: 0.02 };
                     }
                 }
-                let ok = player.run_to(dest.x * fw2, dest.y * player.side * fh2);
+                let ok = player.run_to(dest.x * right, dest.y * player.side * top);
                 ok = ok && (player.vel < min_vel);
                 allok = ok && allok;
                 //--    if (ok) look_at(m, ball)

@@ -59,7 +59,24 @@ declare class SoccerTeam {
     **/
     private createPlayers();
 }
+declare class Region {
+    readonly left: number;
+    readonly top: number;
+    readonly right: number;
+    readonly bottom: number;
+    readonly width: number;
+    readonly height: number;
+    constructor(left: number, top: number, right: number, bottom: number);
+}
 declare class SoccerPitch {
+    private playingArea;
+    constructor(width: number, height: number);
+    readonly left: number;
+    readonly top: number;
+    readonly right: number;
+    readonly bottom: number;
+    readonly width: number;
+    readonly height: number;
     draw(): void;
 }
 declare class Game {
@@ -70,8 +87,9 @@ declare class Game {
     state: State<Game>;
     ball: SoccerBall;
     controllingPlayers: ControllingPlayer[];
-    pitch: SoccerPitch;
+    private pitch;
     private constructor();
+    getPitch(): SoccerPitch;
     get_controlled(side: number): PlayerBase;
     create_player(_i: number): void;
     initialize(): void;
@@ -85,15 +103,6 @@ declare class Game {
 }
 declare var cnt: number;
 declare function animate(): void;
-declare class Region {
-    private left;
-    private top;
-    private right;
-    private bottom;
-    private width;
-    private height;
-    constructor(left: number, top: number, right: number, bottom: number);
-}
 declare namespace MathHelper {
     const EpsilonDouble = 0.000001;
     const Pi: number;
@@ -377,10 +386,6 @@ declare let half_time: number;
 declare let max_val: number;
 declare let cos22_5: number;
 declare let sin22_5: number;
-declare const fh = 384;
-declare const fw = 256;
-declare const fh2: number;
-declare const fw2: number;
 declare let penaltyw2: number;
 declare let fh2_penaltyh: number;
 declare let goalw: number;

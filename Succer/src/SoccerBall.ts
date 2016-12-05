@@ -36,7 +36,9 @@ class SoccerBall extends MovingEntity {
 
     public update() {
         let game = Game.getInstance();
-
+        let pitch = game.getPitch();
+        let top = pitch.top;
+        let right = pitch.right;
         let prevball = this.position.toVector2();
         //plus_in_place(this.position, this.velocity);
         this.position.add(this.velocity);
@@ -54,12 +56,12 @@ class SoccerBall extends MovingEntity {
         }
         this.position.z += this.velocity.z;
 
-        let post1 = { x: goalx1, y: fh2 };
-        let post1_ = { x: goalx1, y: fh2 + goalh / 2 };
-        let post2 = { x: goalx2, y: fh2 };
-        let post2_ = { x: goalx2, y: fh2 + goalh / 2 };
-        let fieldw2 = fw2 + border;
-        let fieldh2 = fh2 + border;
+        let post1 = { x: goalx1, y: top };
+        let post1_ = { x: goalx1, y: top + goalh / 2 };
+        let post2 = { x: goalx2, y: top };
+        let post2_ = { x: goalx2, y: top + goalh / 2 };
+        let fieldw2 = right + border;
+        let fieldh2 = top + border;
 
         if (this.position.y < 0) {
             post1.y = -post1.y;
@@ -82,8 +84,8 @@ class SoccerBall extends MovingEntity {
         }
 
         //--touch lines
-        if (game.isPlaying() && Math.abs(this.position.x) > fw2) {
-            throwin.init_throwin(FieldPlayerStateThrowin.getInstance(), new Vector2(fw2, MathHelper.clamp(Math.abs(this.position.y), -fh2, fh2)), { x: 1, y: 1 }, 1);
+        if (game.isPlaying() && Math.abs(this.position.x) > right) {
+            throwin.init_throwin(FieldPlayerStateThrowin.getInstance(), new Vector2(right, MathHelper.clamp(Math.abs(this.position.y), -top, top)), { x: 1, y: 1 }, 1);
         }
 
         //--scoring_team
@@ -91,7 +93,7 @@ class SoccerBall extends MovingEntity {
         if (game.isPlaying() &&
             scoring_team === 0 &&
             this.position.z < goall && post1.x < this.position.x && this.position.x < post2.x &&
-            fh2 + goalh > Math.abs(this.position.y) && Math.abs(this.position.y) > fh2) {
+            top + goalh > Math.abs(this.position.y) && Math.abs(this.position.y) > top) {
             scoring_team = side_to_idx(this.position.y > 0 ? 1 : - 1);
             kickoff_team = scoring_team;
             game.score[scoring_team] += 1;
@@ -102,10 +104,10 @@ class SoccerBall extends MovingEntity {
         }
 
         //--corner / goal kick
-        if (game.isPlaying() && Math.abs(this.position.y) > fh2) {
+        if (game.isPlaying() && Math.abs(this.position.y) > top) {
             throwin.side = -balllasttouchedside;
             if (throwin.side * this.position.y < 0) {
-                throwin.init_throwin(CornerKick.getInstance(), new Vector2(fw2, fh2), { x: 1.1, y: 1.03 }, 5);
+                throwin.init_throwin(CornerKick.getInstance(), new Vector2(right, top), { x: 1.1, y: 1.03 }, 5);
             } else {
                 throwin.init_throwin(Goalkick.getInstance(), new Vector2(MathHelper.randInRange(0, penaltyw2), fh2_penaltyh), { x: 1, y: 1.15 }, 25);
                 //--init_throwin(fstate_goalkick, { x=penaltyw2, y=fh2_penaltyh }, { x=1, y=1.15 }, 25)

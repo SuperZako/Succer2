@@ -19,12 +19,18 @@ class FieldPlayerStateThrowin extends State<FieldPlayer> {
     public ai(p: ControllingPlayer) {
         let game = Game.getInstance();
         let ball = game.ball;
+        let pitch = game.getPitch();
+        let top = pitch.top;
+        let left = pitch.left;
+        let right = pitch.right;
+        let bottom = pitch.bottom;
+
         let f = p.player;
         let dy = 0;
         if (ball.position.y * f.side > 0) {
             dy = -2;
         } else {
-            if (ball.position.y * f.side > -fh2 / 2) {
+            if (ball.position.y * f.side > -top / 2) {
                 dy = -1
             }
         }

@@ -21,10 +21,12 @@ class SoccerTeam {
 
     private createPlayers() {
         const fieldplayercount = 5;
-
+        let game = Game.getInstance();
+        let pitch = game.getPitch();
+        let right = pitch.right;
         for (let i = 0; i < fieldplayercount; ++i) {
             let fieldPlayer = new FieldPlayer(this.color, i);
-            fieldPlayer.position.x = fw2;
+            fieldPlayer.position.x = right;
             fieldPlayer.position.y = 0;
             this.players.push(fieldPlayer);
         }

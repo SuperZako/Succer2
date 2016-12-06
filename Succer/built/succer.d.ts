@@ -68,9 +68,56 @@ declare class Region {
     readonly height: number;
     constructor(left: number, top: number, right: number, bottom: number);
 }
+interface IVector2 {
+    x: number;
+    y: number;
+}
+declare class Vector2 implements IVector2 {
+    x: number;
+    y: number;
+    constructor(x?: number, y?: number);
+    static readonly UnitY: Vector2;
+    static readonly Zero: Vector2;
+    static add(lhs: Vector2, rhs: Vector2): Vector2;
+    static subtract(lhs: IVector2, rhs: IVector2): Vector2;
+    static multiply(lhs: number, rhs: IVector2): Vector2;
+    static dot(lhs: IVector2, rhs: IVector2): number;
+    /**
+     *   returns the length of a 2D vector
+    */
+    static length(vector: IVector2): number;
+    /**
+     *   normalizes a 2D Vector
+     */
+    static normalize(vector: Vector2): Vector2;
+    static distance(vector1: IVector2, vector2: IVector2): number;
+    static distanceSquared(vector1: IVector2, vector2: IVector2): number;
+    /**
+    * calculates the dot product
+    * @param v2
+    * @return  dot product
+    */
+    dot(vector: Vector2): number;
+    add(rhs: IVector2): this;
+    multiply(rhs: number): this;
+    length(): number;
+    clamp(max: number): void;
+    clone(): Vector2;
+    toVector3(): Vector3;
+}
+declare class GoalUp extends BaseGameEntity {
+    private leftPost;
+    private rightPost;
+    private facing;
+    constructor(leftPost: Vector2, rightPost: Vector2, facing: Vector2);
+    draw(): void;
+    drawshadow(): void;
+}
 declare class SoccerPitch {
     private playingArea;
+    private goals;
     constructor(width: number, height: number);
+    getGoals(): GoalUp[];
     readonly left: number;
     readonly top: number;
     readonly right: number;
@@ -298,50 +345,6 @@ declare class KeeperStateRun extends State<GoalKeeper> {
     private static instance;
     static getInstance(): KeeperStateRun;
     draw(f: FieldPlayer): void;
-}
-declare class GoalUp extends BaseGameEntity {
-    private leftPost;
-    private rightPost;
-    constructor();
-    draw(): void;
-    drawshadow(): void;
-}
-declare var goal_up: GoalUp;
-interface IVector2 {
-    x: number;
-    y: number;
-}
-declare class Vector2 implements IVector2 {
-    x: number;
-    y: number;
-    constructor(x?: number, y?: number);
-    static readonly Zero: Vector2;
-    static add(lhs: Vector2, rhs: Vector2): Vector2;
-    static subtract(lhs: IVector2, rhs: IVector2): Vector2;
-    static multiply(lhs: number, rhs: IVector2): Vector2;
-    static dot(lhs: IVector2, rhs: IVector2): number;
-    /**
-     *   returns the length of a 2D vector
-    */
-    static length(vector: IVector2): number;
-    /**
-     *   normalizes a 2D Vector
-     */
-    static normalize(vector: Vector2): Vector2;
-    static distance(vector1: IVector2, vector2: IVector2): number;
-    static distanceSquared(vector1: IVector2, vector2: IVector2): number;
-    /**
-    * calculates the dot product
-    * @param v2
-    * @return  dot product
-    */
-    dot(vector: Vector2): number;
-    add(rhs: IVector2): this;
-    multiply(rhs: number): this;
-    length(): number;
-    clamp(max: number): void;
-    clone(): Vector2;
-    toVector3(): Vector3;
 }
 declare namespace Renderer {
 }

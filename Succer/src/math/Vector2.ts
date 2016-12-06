@@ -6,6 +6,12 @@
 class Vector2 implements IVector2 {
     constructor(public x = 0, public y = 0) { }
 
+
+
+    public static get UnitY() {
+        return new Vector2(0, 1);
+    }
+
     // Returns a Vector2 with all of its components set to zero.
     public static get Zero() {
         return new Vector2();

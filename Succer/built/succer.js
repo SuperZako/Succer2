@@ -285,15 +285,181 @@ var Region = (function () {
     }
     return Region;
 }());
+var Vector2 = (function () {
+    function Vector2(x, y) {
+        if (x === void 0) { x = 0; }
+        if (y === void 0) { y = 0; }
+        this.x = x;
+        this.y = y;
+    }
+    Object.defineProperty(Vector2, "UnitY", {
+        get: function () {
+            return new Vector2(0, 1);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Vector2, "Zero", {
+        // Returns a Vector2 with all of its components set to zero.
+        get: function () {
+            return new Vector2();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    //overload the + operator
+    Vector2.add = function (lhs, rhs) {
+        var x = lhs.x + rhs.x;
+        var y = lhs.y + rhs.y;
+        return new Vector2(x, y);
+    };
+    //overload the - operator
+    Vector2.subtract = function (lhs, rhs) {
+        var x = lhs.x - rhs.x;
+        var y = lhs.y - rhs.y;
+        return new Vector2(x, y);
+    };
+    Vector2.multiply = function (lhs, rhs) {
+        return new Vector2(lhs * rhs.x, lhs * rhs.y);
+    };
+    Vector2.dot = function (lhs, rhs) {
+        return lhs.x * rhs.x + lhs.y * rhs.y;
+    };
+    /**
+     *   returns the length of a 2D vector
+    */
+    Vector2.length = function (vector) {
+        var x = vector.x;
+        var y = vector.y;
+        return Math.sqrt(x * x + y * y);
+    };
+    /**
+     *   normalizes a 2D Vector
+     */
+    Vector2.normalize = function (vector) {
+        //let _length = Vector2.length(vector);
+        var x = vector.x;
+        var y = vector.y;
+        var length = Math.sqrt(x * x + y * y);
+        if (length > 1e-6 /*MathHelper.EpsilonDouble*/) {
+            vector.x /= length;
+            vector.y /= length;
+        }
+        return vector;
+    };
+    Vector2.distance = function (vector1, vector2) {
+        return Math.sqrt(Vector2.distanceSquared(vector1, vector2));
+    };
+    Vector2.distanceSquared = function (vector1, vector2) {
+        var x = vector1.x - vector2.x;
+        var y = vector1.y - vector2.y;
+        return x * x + y * y;
+    };
+    /**
+    * calculates the dot product
+    * @param v2
+    * @return  dot product
+    */
+    Vector2.prototype.dot = function (vector) {
+        return this.x * vector.x + this.y * vector.y;
+    };
+    //we need some overloaded operators
+    Vector2.prototype.add = function (rhs) {
+        this.x += rhs.x;
+        this.y += rhs.y;
+        return this;
+    };
+    Vector2.prototype.multiply = function (rhs) {
+        this.x *= rhs;
+        this.y *= rhs;
+        return this;
+    };
+    Vector2.prototype.length = function () {
+        var x = this.x;
+        var y = this.y;
+        return Math.sqrt(x * x + y * y);
+    };
+    Vector2.prototype.clamp = function (max) {
+        var length = this.length();
+        if (length > max) {
+            var factor = max / length;
+            this.multiply(factor);
+        }
+    };
+    Vector2.prototype.clone = function () {
+        return new Vector2(this.x, this.y);
+    };
+    Vector2.prototype.toVector3 = function () {
+        return new Vector3(this.x, this.y);
+    };
+    return Vector2;
+}());
+/// <reference path="./Game.ts" />
+/// <reference path="./SoccerPitch.ts" />
+var GoalUp = (function (_super) {
+    __extends(GoalUp, _super);
+    function GoalUp(leftPost, rightPost, facing) {
+        var _this = _super.call(this) || this;
+        _this.leftPost = leftPost;
+        _this.rightPost = rightPost;
+        _this.facing = facing;
+        return _this;
+        //let game = Game.getInstance();
+        //let pitch = game.getPitch();
+        //let bottom = pitch.bottom;
+        //this.position.y = bottom;
+    }
+    GoalUp.prototype.draw = function () {
+        var game = Game.getInstance();
+        var pitch = game.getPitch();
+        var top = pitch.top;
+        var left = pitch.left;
+        var right = pitch.right;
+        var bottom = pitch.bottom;
+        var clipstartx = goalx1 - camtarget.x + 1 + 64;
+        var clipstarty = -camtarget.y + 64 - top;
+        var clipendx = goalx2 - goalx1;
+        var clipendy = goalh / 2 + 1;
+        //spr(60, goalx2, -fh2 - 17)
+        clip(clipstartx, clipstarty - 10, clipendx + 8, clipendy);
+        for (var x = goalx1 - 1; x <= goalx2 + 8; x += 8) {
+            for (var y = -11; y <= 7; y += 8) {
+            }
+        }
+        clip(clipstartx, clipstarty - goalh, clipendx - 1, clipendy);
+        for (var x = goalx1 - 1; x <= goalx2 + 8; x += 8) {
+            for (var y = -goalh + 1; y <= 8; y += 8) {
+            }
+        }
+        clip();
+        var a = -goall - top;
+        line(goalx1, a, goalx1, bottom);
+        line(goalx1, a, goalx2, a);
+        line(goalx2, a, goalx2, bottom);
+    };
+    GoalUp.prototype.drawshadow = function () {
+    };
+    return GoalUp;
+}(BaseGameEntity));
 /// <reference path="./common/Region.ts" />
+/// <reference path="./math/Vector2.ts" />
+/// <reference path="./GoalUp.ts" />
 var SoccerPitch = (function () {
     function SoccerPitch(width, height) {
+        this.goals = [];
         var left = -width / 2;
         var top = height / 2;
         var right = width / 2;
         var bottom = -height / 2;
+        var GoalWidth = 60;
+        // depth 
         this.playingArea = new Region(left, top, right, bottom);
+        this.goals.push(new GoalUp(new Vector2(top, GoalWidth / 2), new Vector2(top, -GoalWidth / 2), new Vector2(0, -1)));
+        this.goals.push(new GoalUp(new Vector2(bottom, -GoalWidth / 2), new Vector2(bottom, GoalWidth / 2), new Vector2(0, 1)));
     }
+    SoccerPitch.prototype.getGoals = function () {
+        return this.goals;
+    };
     Object.defineProperty(SoccerPitch.prototype, "left", {
         get: function () {
             var playingArea = this.playingArea;
@@ -546,8 +712,9 @@ var Game = (function () {
         circ(0, 0, 30);
         palt(3, true);
         palt(0, false);
+        var goals = pitch.getGoals();
         var draw_list = [];
-        draw_list.push(goal_up);
+        draw_list.push(goals[0]);
         draw_list.push(this.ball);
         //for (let i of men) {
         //    draw_list.push(i);
@@ -1868,151 +2035,6 @@ var KeeperStateRun = (function (_super) {
     return KeeperStateRun;
 }(State));
 KeeperStateRun.instance = new KeeperStateRun();
-var GoalUp = (function (_super) {
-    __extends(GoalUp, _super);
-    function GoalUp() {
-        var _this = _super.call(this) || this;
-        var game = Game.getInstance();
-        var pitch = game.getPitch();
-        var bottom = pitch.bottom;
-        _this.position.y = bottom;
-        return _this;
-    }
-    GoalUp.prototype.draw = function () {
-        var game = Game.getInstance();
-        var pitch = game.getPitch();
-        var top = pitch.top;
-        var left = pitch.left;
-        var right = pitch.right;
-        var bottom = pitch.bottom;
-        var clipstartx = goalx1 - camtarget.x + 1 + 64;
-        var clipstarty = -camtarget.y + 64 - top;
-        var clipendx = goalx2 - goalx1;
-        var clipendy = goalh / 2 + 1;
-        //spr(60, goalx2, -fh2 - 17)
-        clip(clipstartx, clipstarty - 10, clipendx + 8, clipendy);
-        for (var x = goalx1 - 1; x <= goalx2 + 8; x += 8) {
-            for (var y = -11; y <= 7; y += 8) {
-            }
-        }
-        clip(clipstartx, clipstarty - goalh, clipendx - 1, clipendy);
-        for (var x = goalx1 - 1; x <= goalx2 + 8; x += 8) {
-            for (var y = -goalh + 1; y <= 8; y += 8) {
-            }
-        }
-        clip();
-        var a = -goall - top;
-        line(goalx1, a, goalx1, bottom);
-        line(goalx1, a, goalx2, a);
-        line(goalx2, a, goalx2, bottom);
-    };
-    GoalUp.prototype.drawshadow = function () {
-    };
-    return GoalUp;
-}(BaseGameEntity));
-var goal_up = new GoalUp();
-var Vector2 = (function () {
-    function Vector2(x, y) {
-        if (x === void 0) { x = 0; }
-        if (y === void 0) { y = 0; }
-        this.x = x;
-        this.y = y;
-    }
-    Object.defineProperty(Vector2, "Zero", {
-        // Returns a Vector2 with all of its components set to zero.
-        get: function () {
-            return new Vector2();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    //overload the + operator
-    Vector2.add = function (lhs, rhs) {
-        var x = lhs.x + rhs.x;
-        var y = lhs.y + rhs.y;
-        return new Vector2(x, y);
-    };
-    //overload the - operator
-    Vector2.subtract = function (lhs, rhs) {
-        var x = lhs.x - rhs.x;
-        var y = lhs.y - rhs.y;
-        return new Vector2(x, y);
-    };
-    Vector2.multiply = function (lhs, rhs) {
-        return new Vector2(lhs * rhs.x, lhs * rhs.y);
-    };
-    Vector2.dot = function (lhs, rhs) {
-        return lhs.x * rhs.x + lhs.y * rhs.y;
-    };
-    /**
-     *   returns the length of a 2D vector
-    */
-    Vector2.length = function (vector) {
-        var x = vector.x;
-        var y = vector.y;
-        return Math.sqrt(x * x + y * y);
-    };
-    /**
-     *   normalizes a 2D Vector
-     */
-    Vector2.normalize = function (vector) {
-        //let _length = Vector2.length(vector);
-        var x = vector.x;
-        var y = vector.y;
-        var length = Math.sqrt(x * x + y * y);
-        if (length > 1e-6 /*MathHelper.EpsilonDouble*/) {
-            vector.x /= length;
-            vector.y /= length;
-        }
-        return vector;
-    };
-    Vector2.distance = function (vector1, vector2) {
-        return Math.sqrt(Vector2.distanceSquared(vector1, vector2));
-    };
-    Vector2.distanceSquared = function (vector1, vector2) {
-        var x = vector1.x - vector2.x;
-        var y = vector1.y - vector2.y;
-        return x * x + y * y;
-    };
-    /**
-    * calculates the dot product
-    * @param v2
-    * @return  dot product
-    */
-    Vector2.prototype.dot = function (vector) {
-        return this.x * vector.x + this.y * vector.y;
-    };
-    //we need some overloaded operators
-    Vector2.prototype.add = function (rhs) {
-        this.x += rhs.x;
-        this.y += rhs.y;
-        return this;
-    };
-    Vector2.prototype.multiply = function (rhs) {
-        this.x *= rhs;
-        this.y *= rhs;
-        return this;
-    };
-    Vector2.prototype.length = function () {
-        var x = this.x;
-        var y = this.y;
-        return Math.sqrt(x * x + y * y);
-    };
-    Vector2.prototype.clamp = function (max) {
-        var length = this.length();
-        if (length > max) {
-            var factor = max / length;
-            this.multiply(factor);
-        }
-    };
-    Vector2.prototype.clone = function () {
-        return new Vector2(this.x, this.y);
-    };
-    Vector2.prototype.toVector3 = function () {
-        return new Vector3(this.x, this.y);
-    };
-    return Vector2;
-}());
 var Renderer;
 (function (Renderer) {
     var canvas;

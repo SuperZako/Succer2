@@ -1,16 +1,15 @@
-﻿
+﻿/// <reference path="./Game.ts" />
+/// <reference path="./SoccerPitch.ts" />
+
 class GoalUp extends BaseGameEntity {
-    private leftPost: Vector2;
 
-    private rightPost: Vector2;
-
-    constructor() {
+    constructor(private leftPost: Vector2, private rightPost: Vector2, private facing: Vector2) {
         super();
-        let game = Game.getInstance();
-        let pitch = game.getPitch();
-        let bottom = pitch.bottom;
+        //let game = Game.getInstance();
+        //let pitch = game.getPitch();
+        //let bottom = pitch.bottom;
 
-        this.position.y = bottom;
+        //this.position.y = bottom;
     }
 
     public draw() {
@@ -48,4 +47,3 @@ class GoalUp extends BaseGameEntity {
     public drawshadow() {
     }
 }
-var goal_up = new GoalUp();

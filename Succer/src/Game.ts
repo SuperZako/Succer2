@@ -20,9 +20,10 @@ class Game {
 
     public controllingPlayers: ControllingPlayer[] = [];
 
-    private pitch = new SoccerPitch(256, 384);
+    private pitch: SoccerPitch;// = new SoccerPitch(256, 384);
 
     private constructor() {
+        this.pitch = new SoccerPitch(256, 384);
     }
 
     public getPitch() {
@@ -235,8 +236,9 @@ class Game {
         palt(3, true);
         palt(0, false);
 
+        let goals = pitch.getGoals();
         let draw_list: BaseGameEntity[] = [];
-        draw_list.push(goal_up);
+        draw_list.push(goals[0]);
         draw_list.push(this.ball);
 
         //for (let i of men) {

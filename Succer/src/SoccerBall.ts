@@ -19,21 +19,6 @@ class SoccerBall extends MovingEntity {
         spr(45, this.position.x - this.w + 1, this.position.y - this.h + 1);
     }
 
-    public check_net(prevball: IVector2, goal1: IVector2, goal2: IVector2) {
-        let res = segment_intersect(prevball, this.position, goal1, goal2);
-        if (res) {
-            if (goal1.x === goal2.x) {
-                this.velocity.x = -this.velocity.x
-            } else {
-                this.velocity.y = -this.velocity.y
-            }
-            //muls_in_place(this.velocity, 0.25)
-            this.velocity.multiply(0.25);
-            this.position.x = res.x
-            this.position.y = res.y
-        }
-    }
-
     public update() {
         let game = Game.getInstance();
         let pitch = game.getPitch();
@@ -56,32 +41,9 @@ class SoccerBall extends MovingEntity {
         }
         this.position.z += this.velocity.z;
 
-        let post1 = { x: goalx1, y: top };
-        let post1_ = { x: goalx1, y: top + goalh / 2 };
-        let post2 = { x: goalx2, y: top };
-        let post2_ = { x: goalx2, y: top + goalh / 2 };
-        let fieldw2 = right + border;
-        let fieldh2 = top + border;
-
-        if (this.position.y < 0) {
-            post1.y = -post1.y;
-            post1_.y = -post1_.y;
-            post2.y = -post2.y;
-            post2_.y = -post2_.y;
-        }
-
-        //--goal col
-        if (this.position.z <= goall) {
-            //--nets
-            this.check_net(prevball, post1, post1_);
-            this.check_net(prevball, post2, post2_);
-            this.check_net(prevball, post1_, post2_);
-
-            //--posts
-            check_post(post1, prevball);
-            check_post(post2, prevball);
-            //--todo check horiz post
-        }
+        let goals = pitch.getGoals();
+        goals[0].testCollisionWithBall(this);
+        goals[1].testCollisionWithBall(this);
 
         //--touch lines
         if (game.isPlaying() && Math.abs(this.position.x) > right) {
@@ -92,8 +54,7 @@ class SoccerBall extends MovingEntity {
         //--todo check ball really entering the goal...
         if (game.isPlaying() &&
             scoring_team === 0 &&
-            this.position.z < goall && post1.x < this.position.x && this.position.x < post2.x &&
-            top + goalh > Math.abs(this.position.y) && Math.abs(this.position.y) > top) {
+            (goals[0].scored(this) || goals[1].scored(this))) {
             scoring_team = side_to_idx(this.position.y > 0 ? 1 : - 1);
             kickoff_team = scoring_team;
             game.score[scoring_team] += 1;
@@ -113,6 +74,9 @@ class SoccerBall extends MovingEntity {
                 //--init_throwin(fstate_goalkick, { x=penaltyw2, y=fh2_penaltyh }, { x=1, y=1.15 }, 25)
             }
         }
+
+        let fieldw2 = right + border;
+        let fieldh2 = top + border;
 
         //--field borders
         let bd = this.velocity;

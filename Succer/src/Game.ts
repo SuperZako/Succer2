@@ -94,11 +94,7 @@ class Game {
                 matchtimer += 1
             }
             if (first_half && matchtimer >= half_time || matchtimer > full_time) {
-                changing_side = first_half
-                //foreach(men, change_side)
-                //for (let m of men) {
-                //    m.change_side();
-                //}
+                changing_side = first_half;
                 for (let team of teams) {
                     for (let player of team.players) {
                         player.change_side();

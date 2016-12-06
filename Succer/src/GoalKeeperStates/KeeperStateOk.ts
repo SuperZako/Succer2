@@ -32,7 +32,10 @@ class KeeperStateOk extends State<GoalKeeper> {
         //--dive ?
         let future = 7;
         let futureball = Vector3.add(ball.position, Vector3.multiply(future, ball.velocity));
-        let res = segment_intersect(ball.position, futureball, { x: goalx1, y: top * k.side }, { x: goalx2, y: top * k.side });
+        let goals = pitch.getGoals();
+        let leftPost = goals[0].leftPost;
+        let rightPost = goals[0].rightPost;
+        let res = segment_intersect(ball.position, futureball, { x: leftPost.x, y: top * k.side }, { x: rightPost.x, y: top * k.side });
         if (res) {// -- and abs(ball.dx) > 0.15 then
             let divefactor = 0.99;
             let divemax = 10;
@@ -40,7 +43,7 @@ class KeeperStateOk extends State<GoalKeeper> {
             k.set_state(KeeperStateDive.getInstance());
             return;
         } else { //--just move
-            let wantedx = MathHelper.clamp(ball.position.x, -goalx2, goalx2);
+            let wantedx = MathHelper.clamp(ball.position.x, leftPost.x, rightPost.x);
             let mx = 1.0; // -- max move per frame
             k.position.x = MathHelper.clamp(wantedx, k.position.x - mx, k.position.x + mx);
             if (Math.abs(k.position.y) < top - 4) {

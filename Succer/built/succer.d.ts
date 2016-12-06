@@ -41,7 +41,6 @@ declare class SoccerBall extends MovingEntity {
     constructor();
     draw(): void;
     drawshadow(): void;
-    check_net(prevball: IVector2, goal1: IVector2, goal2: IVector2): void;
     update(): void;
 }
 declare enum TeamColor {
@@ -106,10 +105,17 @@ declare class Vector2 implements IVector2 {
     toVector3(): Vector3;
 }
 declare class GoalUp extends BaseGameEntity {
-    private leftPost;
-    private rightPost;
+    readonly leftPost: Vector2;
+    readonly rightPost: Vector2;
     private facing;
+    readonly width: number;
+    readonly depth: number;
+    readonly height: number;
     constructor(leftPost: Vector2, rightPost: Vector2, facing: Vector2);
+    scored(ball: SoccerBall): boolean;
+    private testCollisionNet(ball, prevball, goal1, goal2);
+    private testCollisionPost(p, prevball);
+    testCollisionWithBall(ball: SoccerBall): void;
     draw(): void;
     drawshadow(): void;
 }
@@ -391,11 +397,6 @@ declare let cos22_5: number;
 declare let sin22_5: number;
 declare let penaltyw2: number;
 declare let fh2_penaltyh: number;
-declare let goalw: number;
-declare let goalh: number;
-declare let goall: number;
-declare let goalx2: number;
-declare let goalx1: number;
 declare let border: number;
 declare let teamcolors: number[];
 declare let shirtcolors: number[][];
@@ -431,7 +432,6 @@ declare function checktimer(a: {
 declare function segment_intersect(a1: IVector2, a2: IVector2, b1: IVector2, b2: IVector2): IVector2 | null;
 declare let ballsfxtime: number;
 declare function ballsfx(): void;
-declare function check_post(p: IVector2, prevball: IVector2): void;
 declare function update_cam(): void;
 declare var kickoff_team: number;
 declare function bubble_sort(t: BaseGameEntity[]): void;

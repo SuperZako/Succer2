@@ -124,21 +124,6 @@ var SoccerBall = (function (_super) {
     SoccerBall.prototype.drawshadow = function () {
         spr(45, this.position.x - this.w + 1, this.position.y - this.h + 1);
     };
-    SoccerBall.prototype.check_net = function (prevball, goal1, goal2) {
-        var res = segment_intersect(prevball, this.position, goal1, goal2);
-        if (res) {
-            if (goal1.x === goal2.x) {
-                this.velocity.x = -this.velocity.x;
-            }
-            else {
-                this.velocity.y = -this.velocity.y;
-            }
-            //muls_in_place(this.velocity, 0.25)
-            this.velocity.multiply(0.25);
-            this.position.x = res.x;
-            this.position.y = res.y;
-        }
-    };
     SoccerBall.prototype.update = function () {
         var game = Game.getInstance();
         var pitch = game.getPitch();
@@ -162,28 +147,9 @@ var SoccerBall = (function (_super) {
             }
         }
         this.position.z += this.velocity.z;
-        var post1 = { x: goalx1, y: top };
-        var post1_ = { x: goalx1, y: top + goalh / 2 };
-        var post2 = { x: goalx2, y: top };
-        var post2_ = { x: goalx2, y: top + goalh / 2 };
-        var fieldw2 = right + border;
-        var fieldh2 = top + border;
-        if (this.position.y < 0) {
-            post1.y = -post1.y;
-            post1_.y = -post1_.y;
-            post2.y = -post2.y;
-            post2_.y = -post2_.y;
-        }
-        //--goal col
-        if (this.position.z <= goall) {
-            //--nets
-            this.check_net(prevball, post1, post1_);
-            this.check_net(prevball, post2, post2_);
-            this.check_net(prevball, post1_, post2_);
-            //--posts
-            check_post(post1, prevball);
-            check_post(post2, prevball);
-        }
+        var goals = pitch.getGoals();
+        goals[0].testCollisionWithBall(this);
+        goals[1].testCollisionWithBall(this);
         //--touch lines
         if (game.isPlaying() && Math.abs(this.position.x) > right) {
             throwin.init_throwin(FieldPlayerStateThrowin.getInstance(), new Vector2(right, MathHelper.clamp(Math.abs(this.position.y), -top, top)), { x: 1, y: 1 }, 1);
@@ -192,8 +158,7 @@ var SoccerBall = (function (_super) {
         //--todo check ball really entering the goal...
         if (game.isPlaying() &&
             scoring_team === 0 &&
-            this.position.z < goall && post1.x < this.position.x && this.position.x < post2.x &&
-            top + goalh > Math.abs(this.position.y) && Math.abs(this.position.y) > top) {
+            (goals[0].scored(this) || goals[1].scored(this))) {
             scoring_team = side_to_idx(this.position.y > 0 ? 1 : -1);
             kickoff_team = scoring_team;
             game.score[scoring_team] += 1;
@@ -212,6 +177,8 @@ var SoccerBall = (function (_super) {
                 throwin.init_throwin(Goalkick.getInstance(), new Vector2(MathHelper.randInRange(0, penaltyw2), fh2_penaltyh), { x: 1, y: 1.15 }, 25);
             }
         }
+        var fieldw2 = right + border;
+        var fieldh2 = top + border;
         //--field borders
         var bd = this.velocity;
         if (this.position.x < -fieldw2) {
@@ -403,12 +370,86 @@ var GoalUp = (function (_super) {
         _this.leftPost = leftPost;
         _this.rightPost = rightPost;
         _this.facing = facing;
+        _this.width = 60;
+        _this.depth = 20;
+        _this.height = 10;
         return _this;
         //let game = Game.getInstance();
         //let pitch = game.getPitch();
         //let bottom = pitch.bottom;
         //this.position.y = bottom;
     }
+    GoalUp.prototype.scored = function (ball) {
+        var depth = this.depth;
+        var left = this.leftPost.x;
+        var right = this.rightPost.x;
+        var top = this.leftPost.y;
+        if (left > right) {
+            var temp = left;
+            left = right;
+            right = temp;
+        }
+        return ball.position.z < depth
+            && left < ball.position.x && ball.position.x < right
+            && top + depth > Math.abs(ball.position.y)
+            && Math.abs(ball.position.y) > top;
+    };
+    GoalUp.prototype.testCollisionNet = function (ball, prevball, goal1, goal2) {
+        var res = segment_intersect(prevball, ball.position, goal1, goal2);
+        if (res) {
+            if (goal1.x === goal2.x) {
+                ball.velocity.x = -ball.velocity.x;
+            }
+            else {
+                ball.velocity.y = -ball.velocity.y;
+            }
+            //muls_in_place(this.velocity, 0.25)
+            ball.velocity.multiply(0.25);
+            ball.position.x = res.x;
+            ball.position.y = res.y;
+        }
+    };
+    GoalUp.prototype.testCollisionPost = function (p, prevball) {
+        var game = Game.getInstance();
+        var ball = game.ball;
+        var d = Vector3.distance(ball.position, { x: p.x, y: p.y, z: 0 });
+        if (d < ball.w) {
+            var delta = Vector2.subtract(p, ball.position);
+            var ballspeed = Vector3.distance(ball.position, { x: prevball.x, y: prevball.y, z: 0 });
+            //plus_in_place(ball.position, muls(delta, -1 / d * ball.w))
+            ball.position.add(Vector2.multiply(-1 / d * ball.w, delta).toVector3());
+            //plus_in_place(ball.velocity, muls(delta, -1 / d * ballspeed))
+            ball.velocity.add(Vector2.multiply(-1 / d * ballspeed, delta).toVector3());
+            ballsfx();
+        }
+    };
+    GoalUp.prototype.testCollisionWithBall = function (ball) {
+        var prevball = ball.position.toVector2();
+        //let post1 = { x: goalx1, y: top };
+        var leftPost = this.leftPost;
+        var post1_ = { x: leftPost.x, y: leftPost.y + this.depth / 2 };
+        //let post2 = { x: goalx2, y: top };
+        var rightPost = this.rightPost;
+        var post2_ = { x: rightPost.x, y: rightPost.y + this.depth / 2 };
+        //let post2_ = { x: goalx2, y: top + goalh / 2 };
+        var height = this.height;
+        //if (this.position.y < 0) {
+        //    post1.y = -post1.y;
+        //    post1_.y = -post1_.y;
+        //    post2.y = -post2.y;
+        //    post2_.y = -post2_.y;
+        //}
+        //--goal col
+        if (this.position.z <= height) {
+            //--nets
+            this.testCollisionNet(ball, prevball, leftPost, post1_);
+            this.testCollisionNet(ball, prevball, rightPost, post2_);
+            this.testCollisionNet(ball, prevball, post1_, post2_);
+            //--posts
+            this.testCollisionPost(leftPost, prevball);
+            this.testCollisionPost(rightPost, prevball);
+        }
+    };
     GoalUp.prototype.draw = function () {
         var game = Game.getInstance();
         var pitch = game.getPitch();
@@ -416,26 +457,30 @@ var GoalUp = (function (_super) {
         var left = pitch.left;
         var right = pitch.right;
         var bottom = pitch.bottom;
-        var clipstartx = goalx1 - camtarget.x + 1 + 64;
+        var leftPost = this.leftPost;
+        var rightPost = this.rightPost;
+        var depth = this.depth;
+        var height = this.height;
+        var clipstartx = leftPost.x - camtarget.x + 1 + 64;
         var clipstarty = -camtarget.y + 64 - top;
-        var clipendx = goalx2 - goalx1;
-        var clipendy = goalh / 2 + 1;
+        var clipendx = rightPost.x - leftPost.x;
+        var clipendy = depth / 2 + 1;
         //spr(60, goalx2, -fh2 - 17)
         clip(clipstartx, clipstarty - 10, clipendx + 8, clipendy);
-        for (var x = goalx1 - 1; x <= goalx2 + 8; x += 8) {
+        for (var x = leftPost.x - 1; x <= rightPost.x + 8; x += 8) {
             for (var y = -11; y <= 7; y += 8) {
             }
         }
-        clip(clipstartx, clipstarty - goalh, clipendx - 1, clipendy);
-        for (var x = goalx1 - 1; x <= goalx2 + 8; x += 8) {
-            for (var y = -goalh + 1; y <= 8; y += 8) {
+        clip(clipstartx, clipstarty - depth, clipendx - 1, clipendy);
+        for (var x = leftPost.x - 1; x <= rightPost.x + 8; x += 8) {
+            for (var y = -depth + 1; y <= 8; y += 8) {
             }
         }
         clip();
-        var a = -goall - top;
-        line(goalx1, a, goalx1, bottom);
-        line(goalx1, a, goalx2, a);
-        line(goalx2, a, goalx2, bottom);
+        var a = -height - top;
+        line(leftPost.x, a, leftPost.x, bottom);
+        line(leftPost.x, a, rightPost.x, a);
+        line(rightPost.x, a, rightPost.x, bottom);
     };
     GoalUp.prototype.drawshadow = function () {
     };
@@ -587,10 +632,6 @@ var Game = (function () {
             }
             if (first_half && matchtimer >= half_time || matchtimer > full_time) {
                 changing_side = first_half;
-                //foreach(men, change_side)
-                //for (let m of men) {
-                //    m.change_side();
-                //}
                 for (var _a = 0, teams_1 = teams; _a < teams_1.length; _a++) {
                     var team = teams_1[_a];
                     for (var _b = 0, _c = team.players; _b < _c.length; _b++) {
@@ -1794,8 +1835,8 @@ var GoalDown = (function (_super) {
         var game = Game.getInstance();
         var pitch = game.getPitch();
         var top = pitch.top;
-        _this.position.y = top + goalh;
         return _this;
+        // this.position.y = top + goalh;
     }
     GoalDown.prototype.draw = function () {
         var game = Game.getInstance();
@@ -1806,12 +1847,13 @@ var GoalDown = (function (_super) {
         var bottom = pitch.bottom;
         //spr(60, goalx2, fh2, 1, 1, false, true)
         color(7);
-        rect(goalx1, -goall + top, goalx2, top);
-        clip(goalx1 - camtarget.x + 64 + 1, -goall - camtarget.y + 64 + top + 1, goalx2 - goalx1 - 1, goalh - 1);
-        for (var x = goalx1; x <= goalx2 + 7; x += 8) {
-            for (var y = -goall; y <= goall; y += 8) {
-            }
-        }
+        //rect(goalx1, -goall + top, goalx2, top)
+        //clip(goalx1 - camtarget.x + 64 + 1, -goall - camtarget.y + 64 + top + 1, goalx2 - goalx1 - 1, goalh - 1)
+        //for (let x = goalx1; x <= goalx2 + 7; x += 8) {
+        //    for (let y = -goall; y <= goall; y += 8) {
+        //        //spr(62, x, y + fh2)
+        //    }
+        //}
         clip();
     };
     GoalDown.prototype.drawshadow = function () {
@@ -1980,7 +2022,10 @@ var KeeperStateOk = (function (_super) {
         //--dive ?
         var future = 7;
         var futureball = Vector3.add(ball.position, Vector3.multiply(future, ball.velocity));
-        var res = segment_intersect(ball.position, futureball, { x: goalx1, y: top * k.side }, { x: goalx2, y: top * k.side });
+        var goals = pitch.getGoals();
+        var leftPost = goals[0].leftPost;
+        var rightPost = goals[0].rightPost;
+        var res = segment_intersect(ball.position, futureball, { x: leftPost.x, y: top * k.side }, { x: rightPost.x, y: top * k.side });
         if (res) {
             var divefactor = 0.99;
             var divemax = 10;
@@ -1989,7 +2034,7 @@ var KeeperStateOk = (function (_super) {
             return;
         }
         else {
-            var wantedx = MathHelper.clamp(ball.position.x, -goalx2, goalx2);
+            var wantedx = MathHelper.clamp(ball.position.x, leftPost.x, rightPost.x);
             var mx = 1.0; // -- max move per frame
             k.position.x = MathHelper.clamp(wantedx, k.position.x - mx, k.position.x + mx);
             if (Math.abs(k.position.y) < top - 4) {
@@ -2257,11 +2302,11 @@ var sin22_5 = 0.3827;
 // const fw2 = fw / 2;
 var penaltyw2 = 64;
 var fh2_penaltyh = Game.getInstance().getPitch().top - 60;
-var goalw = 60;
-var goalh = 20;
-var goall = 10;
-var goalx2 = goalw / 2;
-var goalx1 = -goalx2;
+// let goalw = 60;
+// let goalh = 20;
+// let goall = 10;
+// let goalx2 = goalw / 2;
+// let goalx1 = -goalx2;
 var border = 20;
 var teamcolors = [0, 1, 5];
 //let teamcolors[0] = 0
@@ -2370,7 +2415,7 @@ var teams = [];
 teams[0] = new SoccerTeam(TeamColor.Blue);
 teams[1] = new SoccerTeam(TeamColor.Red);
 var balllasttouchedside = 0;
-var dribble = new Vector2(); //{ x: 0, y: 0 };
+var dribble = new Vector2(); // { x: 0, y: 0 };
 var dribblen = 0;
 var man_with_ball;
 function checktimer(a) {
@@ -2404,20 +2449,6 @@ function ballsfx() {
     if (ballsfxtime <= 0) {
         sfx(5);
         ballsfxtime = 7;
-    }
-}
-function check_post(p, prevball) {
-    var game = Game.getInstance();
-    var ball = game.ball;
-    var d = Vector3.distance(ball.position, { x: p.x, y: p.y, z: 0 });
-    if (d < ball.w) {
-        var delta = Vector2.subtract(p, ball.position);
-        var ballspeed = Vector3.distance(ball.position, { x: prevball.x, y: prevball.y, z: 0 });
-        //plus_in_place(ball.position, muls(delta, -1 / d * ball.w))
-        ball.position.add(Vector2.multiply(-1 / d * ball.w, delta).toVector3());
-        //plus_in_place(ball.velocity, muls(delta, -1 / d * ballspeed))
-        ball.velocity.add(Vector2.multiply(-1 / d * ballspeed, delta).toVector3());
-        ballsfx();
     }
 }
 function update_cam() {

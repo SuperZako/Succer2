@@ -172,11 +172,11 @@ let sin22_5 = 0.3827;
 // const fw2 = fw / 2;
 let penaltyw2 = 64;
 let fh2_penaltyh = /*fh2*/Game.getInstance().getPitch().top - 60;
-let goalw = 60;
-let goalh = 20;
-let goall = 10;
-let goalx2 = goalw / 2;
-let goalx1 = -goalx2;
+// let goalw = 60;
+// let goalh = 20;
+// let goall = 10;
+// let goalx2 = goalw / 2;
+// let goalx1 = -goalx2;
 let border = 20;
 
 let teamcolors = [0, 1, 5];
@@ -296,7 +296,7 @@ teams[0] = new SoccerTeam(TeamColor.Blue);
 teams[1] = new SoccerTeam(TeamColor.Red);
 
 let balllasttouchedside = 0;
-let dribble = new Vector2();//{ x: 0, y: 0 };
+let dribble = new Vector2(); // { x: 0, y: 0 };
 let dribblen = 0;
 
 var man_with_ball: PlayerBase;
@@ -337,20 +337,7 @@ function ballsfx() {
     }
 }
 
-function check_post(p: IVector2, prevball: IVector2) {
-    let game = Game.getInstance();
-    let ball = game.ball;
-    let d = Vector3.distance(ball.position, { x: p.x, y: p.y, z: 0 });
-    if (d < ball.w) {
-        let delta = Vector2.subtract(p, ball.position);
-        let ballspeed = Vector3.distance(ball.position, { x: prevball.x, y: prevball.y, z: 0 });
-        //plus_in_place(ball.position, muls(delta, -1 / d * ball.w))
-        ball.position.add(Vector2.multiply(-1 / d * ball.w, delta).toVector3());
-        //plus_in_place(ball.velocity, muls(delta, -1 / d * ballspeed))
-        ball.velocity.add(Vector2.multiply(-1 / d * ballspeed, delta).toVector3());
-        ballsfx();
-    }
-}
+
 
 
 

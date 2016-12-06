@@ -55,7 +55,7 @@ class SoccerBall extends MovingEntity {
         if (game.isPlaying() &&
             scoring_team === 0 &&
             (goals[0].scored(this) || goals[1].scored(this))) {
-            scoring_team = side_to_idx(this.position.y > 0 ? 1 : - 1);
+            scoring_team = game.side_to_idx(this.position.y > 0 ? 1 : - 1);
             kickoff_team = scoring_team;
             game.score[scoring_team] += 1;
             camlastpos = this.position.toVector2();//copy(this.position);

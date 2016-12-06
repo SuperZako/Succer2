@@ -12,6 +12,8 @@ class Game {
         return this.instance;
     }
 
+    public matchtimer: number;
+
     public demo = true;
     public score = [0, 0];
     public state: State<Game>;
@@ -26,12 +28,24 @@ class Game {
         this.pitch = new SoccerPitch(256, 384);
     }
 
+    public side_to_idx(s: number) {
+        //-- return flr((s + 1) / 2 + 1)
+        //return ((matchtimer >= half_time ? - s : s) + 1) / 2;// + 1
+        return Math.floor(((this.matchtimer >= half_time ? - s : s) + 1) / 2); // + 1
+    }
+
+    public idx_to_side(i: number) {
+        //return (matchtimer >= half_time ? - 1 : 1) * (2 * i - 3)
+        return (this.matchtimer >= half_time ? - 1 : 1) * (2 * i - 1);
+    }
+
+
     public getPitch() {
         return this.pitch;
     }
 
     get_controlled(side: number) {
-        return this.controllingPlayers[side_to_idx(side)].player;
+        return this.controllingPlayers[this.side_to_idx(side)].player;
     }
 
 
@@ -75,7 +89,7 @@ class Game {
     start_match(demo: boolean) {
         this.score = [0, 0];
         this.demo = demo;
-        matchtimer = 0;
+        this.matchtimer = 0;
         camlastpos = camtarget.clone();//copy(camtarget)
         scoring_team = 0;
         starting_team = Math.floor(MathHelper.randInRange(0, 2));//Math.floor(rnd(2));// + 1
@@ -89,11 +103,11 @@ class Game {
         ballsfxtime -= 1;
         if (this.isPlaying()) {
             //--time management
-            let first_half = !(matchtimer >= half_time);
+            let first_half = !(this.matchtimer >= half_time);
             if (!this.demo) {
-                matchtimer += 1
+                this.matchtimer += 1
             }
-            if (first_half && matchtimer >= half_time || matchtimer > full_time) {
+            if (first_half && this.matchtimer >= half_time || this.matchtimer > full_time) {
                 changing_side = first_half;
                 for (let team of teams) {
                     for (let player of team.players) {
@@ -103,7 +117,7 @@ class Game {
                 camlastpos = camtarget.clone();
                 this.setState(GameStateToKickoff.getInstance())
                 kickoff_team = 1 - starting_team;
-                sfx(matchtimer > full_time ? 1 : 0);
+                sfx(this.matchtimer > full_time ? 1 : 0);
                 return;
             }
 
@@ -152,11 +166,6 @@ class Game {
             p.player_input();
         }
 
-        //for (let m of men) {
-        //    //man_update(m);
-        //    m.update();
-        //}
-
         for (let team of teams) {
             for (let player of team.players) {
                 //man_update(m);
@@ -167,7 +176,7 @@ class Game {
         ball.update();
 
         if (this.is_throwin()) {
-            this.controllingPlayers[side_to_idx(throwin.side)].player = throwin.player;
+            this.controllingPlayers[this.side_to_idx(throwin.side)].player = throwin.player;
         }
         if (this.state.update !== undefined) {
             this.state.update(this);
@@ -272,7 +281,7 @@ class Game {
         if (scoring_team !== 0) {
             print_outlined("goal!", 55, 6, 7, 0);
         }
-        if (matchtimer > full_time) {
+        if (this.matchtimer > full_time) {
             print_outlined("game over", 47, 16, 7, 0);
         }
         if (changing_side) {
@@ -286,7 +295,7 @@ class Game {
             menu_offset = Math.max(menu_offset / 2, 1);
         } else {
             menu_offset = Math.min(menu_offset * 2, 128);
-            print_outlined(Math.floor(matchtimer / 30).toString(), 1, 122, 7, 0);
+            print_outlined(Math.floor(this.matchtimer / 30).toString(), 1, 122, 7, 0);
         }
         print_outlined("succer", 51 + menu_offset, 40, 7, 0);
         print_mode(0, "player vs player");

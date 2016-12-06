@@ -385,18 +385,6 @@ function damp(m: SoccerBall | PlayerBase) {
     m.velocity.multiply(m.damp);
 }
 
-function side_to_idx(s: number) {
-    //-- return flr((s + 1) / 2 + 1)
-    //return ((matchtimer >= half_time ? - s : s) + 1) / 2;// + 1
-    return Math.floor(((matchtimer >= half_time ? - s : s) + 1) / 2); // + 1
-}
-
-function idx_to_side(i: number) {
-    //return (matchtimer >= half_time ? - 1 : 1) * (2 * i - 3)
-    return (matchtimer >= half_time ? - 1 : 1) * (2 * i - 1);
-}
-
-
 function distance_men_ball() {
     let game = Game.getInstance();
     let ball = game.ball;
@@ -408,7 +396,7 @@ function distance_men_ball() {
                 let d = dist_manh(player.position, ball.position);
                 player.ball_dist = d;
                 if (game.isPlaying()) {
-                    let p = side_to_idx(player.side);
+                    let p = game.side_to_idx(player.side);
                     if (d < nearestdist[p]) {
                         game.controllingPlayers[p].player = player;
                         nearestdist[p] = d;
@@ -419,7 +407,6 @@ function distance_men_ball() {
     }
 }
 
-var matchtimer: number;
 var camlastpos: Vector2;
 var scoring_team: number;
 

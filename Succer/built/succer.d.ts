@@ -135,6 +135,7 @@ declare class SoccerPitch {
 declare class Game {
     private static instance;
     static getInstance(): Game;
+    matchtimer: number;
     demo: boolean;
     score: number[];
     state: State<Game>;
@@ -142,6 +143,8 @@ declare class Game {
     controllingPlayers: ControllingPlayer[];
     private pitch;
     private constructor();
+    side_to_idx(s: number): number;
+    idx_to_side(i: number): number;
     getPitch(): SoccerPitch;
     get_controlled(side: number): PlayerBase;
     create_player(_i: number): void;
@@ -436,10 +439,7 @@ declare function update_cam(): void;
 declare var kickoff_team: number;
 declare function bubble_sort(t: BaseGameEntity[]): void;
 declare function damp(m: SoccerBall | PlayerBase): void;
-declare function side_to_idx(s: number): number;
-declare function idx_to_side(i: number): number;
 declare function distance_men_ball(): void;
-declare var matchtimer: number;
 declare var camlastpos: Vector2;
 declare var scoring_team: number;
 declare function print_mode(m: number, t: string): void;

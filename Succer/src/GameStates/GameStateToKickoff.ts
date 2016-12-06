@@ -39,7 +39,7 @@ class GameStateToKickoff extends State<Game> {
         let l = Math.max(this.timer / 60, 0);
         camtarget = Vector2.multiply(l, camlastpos);//muls(camlastpos, l);
 
-        let to_exit = matchtimer > full_time;
+        let to_exit = game.matchtimer > full_time;
 
         // --  if (to_exit) plus_in_place(camtarget, muls({ x=fw2, y=0 }, 1 - l))
 
@@ -50,7 +50,7 @@ class GameStateToKickoff extends State<Game> {
                 //--if not m.keeper then
                 let dest = to_exit ? { x: 1, y: 0 } : startpos[i];
                 //--    if 2* kickoff_team - 3 == m.side then
-                if (idx_to_side(kickoff_team) === player.side && !to_exit) {
+                if (game.idx_to_side(kickoff_team) === player.side && !to_exit) {
                     if (i === 1) {
                         dest = { x: 0, y: 0.01 };
                     }

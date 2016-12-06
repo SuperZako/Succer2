@@ -36,7 +36,7 @@ class Throwin {
         this.position.x = this.ballpos.x * v.x;
         this.position.y = this.ballpos.y * v.y;
 
-        let idx = side_to_idx(this.side);
+        let idx = game.side_to_idx(this.side);
         if (t === Goalkick.getInstance()) {
             // this.player = men[men.length + idx - 2]; //keeper
             this.player = teams[idx].players[5];

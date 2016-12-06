@@ -159,7 +159,7 @@ var SoccerBall = (function (_super) {
         if (game.isPlaying() &&
             scoring_team === 0 &&
             (goals[0].scored(this) || goals[1].scored(this))) {
-            scoring_team = side_to_idx(this.position.y > 0 ? 1 : -1);
+            scoring_team = game.side_to_idx(this.position.y > 0 ? 1 : -1);
             kickoff_team = scoring_team;
             game.score[scoring_team] += 1;
             camlastpos = this.position.toVector2(); //copy(this.position);
@@ -580,11 +580,20 @@ var Game = (function () {
     Game.getInstance = function () {
         return this.instance;
     };
+    Game.prototype.side_to_idx = function (s) {
+        //-- return flr((s + 1) / 2 + 1)
+        //return ((matchtimer >= half_time ? - s : s) + 1) / 2;// + 1
+        return Math.floor(((this.matchtimer >= half_time ? -s : s) + 1) / 2); // + 1
+    };
+    Game.prototype.idx_to_side = function (i) {
+        //return (matchtimer >= half_time ? - 1 : 1) * (2 * i - 3)
+        return (this.matchtimer >= half_time ? -1 : 1) * (2 * i - 1);
+    };
     Game.prototype.getPitch = function () {
         return this.pitch;
     };
     Game.prototype.get_controlled = function (side) {
-        return this.controllingPlayers[side_to_idx(side)].player;
+        return this.controllingPlayers[this.side_to_idx(side)].player;
     };
     Game.prototype.create_player = function (_i) {
         //this.controllingPlayers.push(new ControllingPlayer(undefined, i));
@@ -614,7 +623,7 @@ var Game = (function () {
     Game.prototype.start_match = function (demo) {
         this.score = [0, 0];
         this.demo = demo;
-        matchtimer = 0;
+        this.matchtimer = 0;
         camlastpos = camtarget.clone(); //copy(camtarget)
         scoring_team = 0;
         starting_team = Math.floor(MathHelper.randInRange(0, 2)); //Math.floor(rnd(2));// + 1
@@ -626,11 +635,11 @@ var Game = (function () {
         ballsfxtime -= 1;
         if (this.isPlaying()) {
             //--time management
-            var first_half = !(matchtimer >= half_time);
+            var first_half = !(this.matchtimer >= half_time);
             if (!this.demo) {
-                matchtimer += 1;
+                this.matchtimer += 1;
             }
-            if (first_half && matchtimer >= half_time || matchtimer > full_time) {
+            if (first_half && this.matchtimer >= half_time || this.matchtimer > full_time) {
                 changing_side = first_half;
                 for (var _a = 0, teams_1 = teams; _a < teams_1.length; _a++) {
                     var team = teams_1[_a];
@@ -642,7 +651,7 @@ var Game = (function () {
                 camlastpos = camtarget.clone();
                 this.setState(GameStateToKickoff.getInstance());
                 kickoff_team = 1 - starting_team;
-                sfx(matchtimer > full_time ? 1 : 0);
+                sfx(this.matchtimer > full_time ? 1 : 0);
                 return;
             }
             dribblen = 0;
@@ -701,7 +710,7 @@ var Game = (function () {
         }
         ball.update();
         if (this.is_throwin()) {
-            this.controllingPlayers[side_to_idx(throwin.side)].player = throwin.player;
+            this.controllingPlayers[this.side_to_idx(throwin.side)].player = throwin.player;
         }
         if (this.state.update !== undefined) {
             this.state.update(this);
@@ -789,7 +798,7 @@ var Game = (function () {
         if (scoring_team !== 0) {
             print_outlined("goal!", 55, 6, 7, 0);
         }
-        if (matchtimer > full_time) {
+        if (this.matchtimer > full_time) {
             print_outlined("game over", 47, 16, 7, 0);
         }
         if (changing_side) {
@@ -803,7 +812,7 @@ var Game = (function () {
         }
         else {
             menu_offset = Math.min(menu_offset * 2, 128);
-            print_outlined(Math.floor(matchtimer / 30).toString(), 1, 122, 7, 0);
+            print_outlined(Math.floor(this.matchtimer / 30).toString(), 1, 122, 7, 0);
         }
         print_outlined("succer", 51 + menu_offset, 40, 7, 0);
         print_mode(0, "player vs player");
@@ -1735,7 +1744,7 @@ var GameStateToKickoff = (function (_super) {
         // -- scroll to the center of the field
         var l = Math.max(this.timer / 60, 0);
         camtarget = Vector2.multiply(l, camlastpos); //muls(camlastpos, l);
-        var to_exit = matchtimer > full_time;
+        var to_exit = game.matchtimer > full_time;
         // --  if (to_exit) plus_in_place(camtarget, muls({ x=fw2, y=0 }, 1 - l))
         var allok = true;
         for (var _i = 0, teams_8 = teams; _i < teams_8.length; _i++) {
@@ -1746,7 +1755,7 @@ var GameStateToKickoff = (function (_super) {
                 //--if not m.keeper then
                 var dest = to_exit ? { x: 1, y: 0 } : startpos[i];
                 //--    if 2* kickoff_team - 3 == m.side then
-                if (idx_to_side(kickoff_team) === player.side && !to_exit) {
+                if (game.idx_to_side(kickoff_team) === player.side && !to_exit) {
                     if (i === 1) {
                         dest = { x: 0, y: 0.01 };
                     }
@@ -2110,7 +2119,7 @@ var Throwin = (function () {
         //throwin.pos = mulv(throwin.ballpos, v);
         this.position.x = this.ballpos.x * v.x;
         this.position.y = this.ballpos.y * v.y;
-        var idx = side_to_idx(this.side);
+        var idx = game.side_to_idx(this.side);
         if (t === Goalkick.getInstance()) {
             // this.player = men[men.length + idx - 2]; //keeper
             this.player = teams[idx].players[5];
@@ -2486,15 +2495,6 @@ function damp(m) {
     //muls_in_place(m.velocity, m.damp)
     m.velocity.multiply(m.damp);
 }
-function side_to_idx(s) {
-    //-- return flr((s + 1) / 2 + 1)
-    //return ((matchtimer >= half_time ? - s : s) + 1) / 2;// + 1
-    return Math.floor(((matchtimer >= half_time ? -s : s) + 1) / 2); // + 1
-}
-function idx_to_side(i) {
-    //return (matchtimer >= half_time ? - 1 : 1) * (2 * i - 3)
-    return (matchtimer >= half_time ? -1 : 1) * (2 * i - 1);
-}
 function distance_men_ball() {
     var game = Game.getInstance();
     var ball = game.ball;
@@ -2507,7 +2507,7 @@ function distance_men_ball() {
                 var d = dist_manh(player.position, ball.position);
                 player.ball_dist = d;
                 if (game.isPlaying()) {
-                    var p = side_to_idx(player.side);
+                    var p = game.side_to_idx(player.side);
                     if (d < nearestdist[p]) {
                         game.controllingPlayers[p].player = player;
                         nearestdist[p] = d;
@@ -2517,7 +2517,6 @@ function distance_men_ball() {
         }
     }
 }
-var matchtimer;
 var camlastpos;
 var scoring_team;
 function print_mode(m, t) {

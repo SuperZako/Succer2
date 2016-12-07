@@ -31,24 +31,6 @@
 
 /// <reference path="./SoccerTeam.ts" />
 
-function _print(_str: string, _x: number, _y: number, _col: number) {
-}
-
-function spr(n: number, x: number, y: number, _w = 0, _h = 0, _flip_x = false, _flip_y = false) {
-    switch (n) {
-        case 45:
-            rectfill(x, y, x + 8, y + 8, 6);
-            break;
-        case 46:
-            rectfill(x, y, x + 8, y + 8, 6);
-            break;
-        default:
-            rectfill(x, y, x + 8, y + 8, 7);
-            break;
-    }
-
-}
-
 function btn(_i: number, _p?: number) {
     return true;
 }
@@ -66,82 +48,6 @@ function clip(_x = 0, _y = 0, _w = 0, _h = 0) {
 function pal(_c0 = 0, _c1 = 0, _p = 0) {
 }
 
-let offsetX = 0;
-let offsetY = 0;
-function camera(x = 0, y = 0) {
-    offsetX = x;
-    offsetY = y;
-}
-
-function palt(_col = 0, _t = false) { }
-
-function line(x0: number, y0: number, x1: number, y1: number, _col = 0) {
-    x0 -= offsetX;
-    x1 -= offsetX;
-    y0 -= offsetY;
-    y1 -= offsetY;
-
-    if (context) {
-        context.save();
-        //新しいパスを開始する
-        context.beginPath();
-        //パスの開始座標を指定する
-        context.moveTo(x0, y0);
-        //座標を指定してラインを引いていく
-        context.lineTo(x1, y1);
-
-        //パスを閉じる（最後の座標から開始座標に向けてラインを引く）
-        context.closePath();
-        //現在のパスを輪郭表示する
-        context.stroke();
-        context.restore();
-    }
-}
-
-function rect(x0 = 0, y0 = 0, x1 = 0, y1 = 0, _col = 0) {
-    x0 -= offsetX;
-    x1 -= offsetX;
-    y0 -= offsetY;
-    y1 -= offsetY;
-
-    if (context) {
-        context.save();
-
-        context.strokeRect(x0, y0, x1 - x0, y1 - y0);
-
-        context.restore();
-    }
-}
-
-function rectfill(x0 = 0, y0 = 0, x1 = 0, y1 = 0, col: number) {
-    x0 -= offsetX;
-    x1 -= offsetX;
-    y0 -= offsetY;
-    y1 -= offsetY;
-
-    if (context) {
-        context.save();
-        switch (col) {
-            case 3:
-                context.fillStyle = 'green';
-                break;
-            case 4:
-                context.fillStyle = 'red';
-                break;
-            case 6:
-                context.fillStyle = "gray";
-                break;
-            case 7:
-                context.fillStyle = 'white';
-                break;
-            default:
-                break;
-        }
-
-        context.fillRect(x0, y0, x1 - x0, y1 - y0);
-        context.restore();
-    }
-}
 
 function color(_col = 0) { }
 
@@ -159,8 +65,7 @@ let menu_inc = 1;
 let timer = 10;
 let blink = false;
 let mode = 1;
-const full_time = 2700;
-let half_time = full_time / 2;
+
 
 let max_val = 32767;
 let cos22_5 = 0.9239;
@@ -192,38 +97,19 @@ let dribbledist = 4;
 
 let camtarget = new Vector2(/*fw2*/Game.getInstance().getPitch().right, 0);
 
-let startpos: IVector2[] = [
-    { x: 0, y: 0.2 },
-    { x: 0.4, y: 0.2 },
-    { x: -0.4, y: 0.2 },
-    { x: 0.35, y: 0.5 },
-    { x: -0.35, y: 0.5 },
-    { x: 0, y: 0.90 },
-];
 
-let attackpos: IVector2[] = [
-    { x: 0, y: -0.2 },
-    { x: 0.4, y: -0.1 },
-    { x: -0.4, y: -0.25 },
-    { x: 0.3, y: 0.1 },
-    { x: -0.3, y: 0.2 },
-    { x: 0, y: 0.90 },
-];
-
-let vel_inc = 0.2;
 let min_vel = 0.1;
 let ball_dist_thres = 64;
 
-let menu = { timer: 10 };
+class Menu {
+    public timer = 10;
 
-function print_outlined(t: string, x: number, y: number, c: number, oc: number) {
-    for (let i = x - 1; i <= x + 1; ++i) {
-        for (let j = y - 1; j <= y + 1; ++j) {
-            _print(t, i, j, oc);
-        }
+    public checktimer() {
+        this.timer -= 1;
+        return this.timer < 0;
     }
-    _print(t, x, y, c);
 }
+let menu = new Menu();// { timer: 10 };
 
 function dist_manh(a: IVector2, b: IVector2) {
     return Math.abs(b.x - a.x) + Math.abs(b.y - a.y);
@@ -238,7 +124,7 @@ function draw_marker(f: PlayerBase) {
     if (f.hasball) {
         sp = 31;
     }
-    spr(sp, f.position.x - 4, f.position.y - 6);
+    Renderer.spr(sp, f.position.x - 4, f.position.y - 6);
 }
 
 function jersey_color(f: PlayerBase) {
@@ -289,23 +175,15 @@ function spr_from_dir(f: PlayerBase) {
 function sprite_pos(f: PlayerBase) {
     return { x: f.position.x - f.w, y: f.position.y - f.h };
 }
-
-//let men: PlayerBase[] = [];
-let teams: SoccerTeam[] = [];
-teams[0] = new SoccerTeam(TeamColor.Blue);
-teams[1] = new SoccerTeam(TeamColor.Red);
-
 let balllasttouchedside = 0;
 let dribble = new Vector2(); // { x: 0, y: 0 };
 let dribblen = 0;
 
-var man_with_ball: PlayerBase;
 
-
-function checktimer(a: { timer: number }) {
-    a.timer -= 1;
-    return a.timer < 0;
-}
+//function checktimer(a: { timer: number }) {
+//    a.timer -= 1;
+//    return a.timer < 0;
+//}
 
 function segment_intersect(a1: IVector2, a2: IVector2, b1: IVector2, b2: IVector2): IVector2 | null {
     let ax = a2.x - a1.x;
@@ -353,14 +231,9 @@ function update_cam() {
 
     let bx = right + border - 64;
     let by = top + border - 64;
-    camtarget.x = Math.floor(MathHelper.clamp(camtarget.x, -bx, bx))
-    camtarget.y = Math.floor(MathHelper.clamp(camtarget.y, -by, by))
+    camtarget.x = Math.floor(MathHelper.clamp(camtarget.x, -bx, bx));
+    camtarget.y = Math.floor(MathHelper.clamp(camtarget.y, -by, by));
 }
-
-var kickoff_team: number;
-
-
-
 
 function bubble_sort(t: BaseGameEntity[]) {
     let len = t.length;
@@ -379,40 +252,11 @@ function bubble_sort(t: BaseGameEntity[]) {
     }
 }
 
-
-function damp(m: SoccerBall | PlayerBase) {
-    //muls_in_place(m.velocity, m.damp)
-    m.velocity.multiply(m.damp);
-}
-
-function distance_men_ball() {
-    let game = Game.getInstance();
-    let ball = game.ball;
-    let nearestdist = [max_val, max_val];
-
-    for (let team of teams) {
-        for (let player of team.players) {
-            if (!player.keeper && player.getState() !== Down.getInstance() && player.getState() !== Tackle.getInstance()) {
-                let d = dist_manh(player.position, ball.position);
-                player.ball_dist = d;
-                if (game.isPlaying()) {
-                    let p = game.side_to_idx(player.side);
-                    if (d < nearestdist[p]) {
-                        game.controllingPlayers[p].player = player;
-                        nearestdist[p] = d;
-                    }
-                }
-            }
-        }
-    }
-}
-
 var camlastpos: Vector2;
-var scoring_team: number;
 
 function print_mode(m: number, t: string) {
     if (m === mode) {
-        print_outlined(t, 32 - menu_offset, 75, 6, 5);
+        Renderer.print_outlined(t, 32 - menu_offset, 75, 6, 5);
     }
 }
 
@@ -425,7 +269,7 @@ function set_state_ok(f: PlayerBase) {
     }
 }
 
-var canvas: HTMLCanvasElement;
+// var canvas: HTMLCanvasElement;
 var context: CanvasRenderingContext2D | null;
 
 function kick_dir() {
@@ -437,19 +281,6 @@ function kick_dir() {
     throwin.balld.clamp(throwin.kickmax);
     throwin.player.look_at(ball);
 }
-
-
-
-function check_tackle(tackler: PlayerBase, other: PlayerBase) {
-    if (tackler !== other) {
-        let dist = Vector3.distance(tackler.position, other.position);
-        let tackle_dist = 5;
-        if (dist < tackle_dist) {
-            other.set_state(Down.getInstance());
-        }
-    }
-}
-var starting_team: number;
 
 var changing_side: boolean;
 
@@ -465,5 +296,5 @@ function changeshirt(i: number) {
 }
 
 function draw_button(s: number, x: number, y: number) {
-    spr(64 + s, x - menu_offset, y + (btnp(s) ? 1 : 0));
+    Renderer.spr(64 + s, x - menu_offset, y + (btnp(s) ? 1 : 0));
 }

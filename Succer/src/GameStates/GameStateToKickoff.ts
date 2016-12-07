@@ -7,16 +7,28 @@ class GameStateToKickoff extends State<Game> {
 
     public timer = 60;
 
+    private startpos: IVector2[] = [
+        { x: 0, y: 0.2 },
+        { x: 0.4, y: 0.2 },
+        { x: -0.4, y: 0.2 },
+        { x: 0.35, y: 0.5 },
+        { x: -0.35, y: 0.5 },
+        { x: 0, y: 0.90 },
+    ];
+
     // this is a singleton
     public static getInstance() {
         return this.instance;
     }
-
+    public checktimer() {
+        this.timer -= 1;
+        return this.timer < 0;
+    }
     public init() {
         this.timer = 60;
-        // for (let m of men) {
-        //     set_state_ok(m);
-        // }
+
+        let game = Game.getInstance();
+        let teams = game.teams;
         for (let player of teams[0].players) {
             set_state_ok(player);
         }
@@ -39,18 +51,19 @@ class GameStateToKickoff extends State<Game> {
         let l = Math.max(this.timer / 60, 0);
         camtarget = Vector2.multiply(l, camlastpos);//muls(camlastpos, l);
 
-        let to_exit = game.matchtimer > full_time;
+        let to_exit = game.matchtimer > game.full_time;
 
         // --  if (to_exit) plus_in_place(camtarget, muls({ x=fw2, y=0 }, 1 - l))
 
         let allok = true;
+        let teams = game.teams;
         for (let team of teams) {
             for (let player of team.players) {
                 let i = player.startposidx;
                 //--if not m.keeper then
-                let dest = to_exit ? { x: 1, y: 0 } : startpos[i];
+                let dest = to_exit ? { x: 1, y: 0 } : this.startpos[i];
                 //--    if 2* kickoff_team - 3 == m.side then
-                if (game.idx_to_side(kickoff_team) === player.side && !to_exit) {
+                if (game.idx_to_side(game.kickoff_team) === player.side && !to_exit) {
                     if (i === 1) {
                         dest = { x: 0, y: 0.01 };
                     }
@@ -67,8 +80,8 @@ class GameStateToKickoff extends State<Game> {
         }
 
 
-
-        if (checktimer(this) && allok) {
+      
+        if (this.checktimer() && allok) {
             if (to_exit) {
                 game.start_match(true);
             } else {

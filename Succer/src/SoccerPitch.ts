@@ -64,8 +64,8 @@ class SoccerPitch {
         let right = this.right;
         let bottom = this.bottom;
         for (let y = bottom; y < top; y += 32) {
-            rectfill(left, y, right, y + 16, 3);
-            rectfill(left, y + 16, right, y + 32, 11);
+            Renderer.rectfill(left, y, right, y + 16, 3);
+            Renderer.rectfill(left, y + 16, right, y + 32, 11);
         }
     }
 }

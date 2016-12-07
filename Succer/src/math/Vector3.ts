@@ -45,6 +45,24 @@ class Vector3 implements IVector3 {
         return x * x + y * y + z * z;
     }
 
+
+    /**
+     *   normalizes a 2D Vector
+     */
+    public static normalize(vector: Vector3) {
+        let x = vector.x;
+        let y = vector.y;
+        let z = vector.z;
+        let length = Math.sqrt(x * x + y * y + z * z);
+
+        if (length > MathHelper.EpsilonDouble) {
+            vector.x /= length;
+            vector.y /= length;
+            vector.z /= length;
+        }
+        return vector;
+    }
+
     public set(v: IVector3) {
         this.x = v.x;
         this.y = v.y;

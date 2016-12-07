@@ -12,7 +12,7 @@ class KeeperStateDive extends State<GoalKeeper> {
     public draw(k: GoalKeeper) {
         jersey_color(k);
         let pos = sprite_pos(k);
-        spr(k.lastspr, pos.x, pos.y, 1, 1, k.velocity.x < 0);
+        Renderer.spr(k.lastspr, pos.x, pos.y, 1, 1, k.velocity.x < 0);
     }
 
     public start(k: GoalKeeper) {
@@ -23,7 +23,7 @@ class KeeperStateDive extends State<GoalKeeper> {
         let game = Game.getInstance();
 
         k.lastspr = k.timer > 25 ? 55 : 56;
-        if (checktimer(k)) {
+        if (k.checktimer()) {
             k.lastspr = 0;
             k.set_state(KeeperStateOk.getInstance());
             return;

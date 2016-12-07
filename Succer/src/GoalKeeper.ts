@@ -23,7 +23,7 @@ class GoalKeeper extends PlayerBase {
     }
 
     public drawshadow() {
-        spr(46, this.position.x - 2, this.position.y - 2)
+        Renderer.spr(46, this.position.x - 2, this.position.y - 2)
     }
 
     public getState() {

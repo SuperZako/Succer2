@@ -16,6 +16,12 @@
     }
 
     export function clamp(value: number, min: number, max: number) {
+        if (min > max) {
+            let temp = min;
+            min = max;
+            max = min;
+        }
+
         return Math.min(Math.max(value, min), max);
     }
 }

@@ -19,23 +19,22 @@ class Tackle extends State<FieldPlayer> {
     public draw(f: FieldPlayer) {
         let pos = sprite_pos(f);
         jersey_color(f);
-        spr(32 + f.lastspr, pos.x, pos.y, 1, 1, f.lastflip);
+        Renderer.spr(32 + f.lastspr, pos.x, pos.y, 1, 1, f.lastflip);
     }
 
     public update(f: FieldPlayer) {
-        if (checktimer(f)) {
+        let game = Game.getInstance();
+        let teams = game.teams;
+        if (f.checktimer()) {
             set_state_ok(f);
         } else {
-            damp(f);
+            f.damp();
             //-- check collision
-            //for (let m of men) {
-            //    check_tackle(f, m);
-            //}
             for (let player of teams[0].players) {
-                check_tackle(f, player);
+                f.check_tackle(player);
             }
             for (let player of teams[1].players) {
-                check_tackle(f, player);
+                f.check_tackle(player);
             }
         }
     }

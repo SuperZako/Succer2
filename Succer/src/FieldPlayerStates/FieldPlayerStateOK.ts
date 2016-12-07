@@ -61,7 +61,7 @@ class FieldPlayerStateOK extends State<FieldPlayer> {
         }
 
         let man = p.player;
-
+        let vel_inc = 0.2;
         if (btn(0, p.num)) {
             man.velocity.x -= vel_inc;
         }
@@ -109,7 +109,7 @@ class FieldPlayerStateOK extends State<FieldPlayer> {
         }
 
         let pos = sprite_pos(f);
-        spr(animoffset + f.lastspr * animfactor + f.animtimer, pos.x, pos.y, 1, 1, f.lastflip);
+        Renderer.spr(animoffset + f.lastspr * animfactor + f.animtimer, pos.x, pos.y, 1, 1, f.lastflip);
     }
 
     public update(f: FieldPlayer) {

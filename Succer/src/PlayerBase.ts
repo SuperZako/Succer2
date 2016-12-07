@@ -14,7 +14,7 @@ abstract class PlayerBase extends MovingEntity {
     hasball = false;
     animtimer = 0;
     timer = 0;
-    damp = 0.9;
+    // damp = 0.9;
     lastflip = false;
     justshot = 0;
     ball_dist = max_val;
@@ -24,10 +24,18 @@ abstract class PlayerBase extends MovingEntity {
     teamcolors: number;//= p + 1;
     skin = Math.floor(/*rnd(skincolors.length)*/MathHelper.randInRange(0, skincolors.length)) /*+ 1*/;
 
-
+    private attackpos: IVector2[] = [
+        { x: 0, y: -0.2 },
+        { x: 0.4, y: -0.1 },
+        { x: -0.4, y: -0.25 },
+        { x: 0.3, y: 0.1 },
+        { x: -0.3, y: 0.2 },
+        { x: 0, y: 0.90 },
+    ];
 
     constructor() {
         super();
+        this.dampFactor = 0.9;
     }
 
     public abstract getState<T>(): State<T>;
@@ -35,6 +43,22 @@ abstract class PlayerBase extends MovingEntity {
     public abstract draw(): void;
 
     public abstract drawshadow(): void;
+
+    public checktimer() {
+        this.timer -= 1;
+        return this.timer < 0;
+    }
+
+
+    public check_tackle(other: PlayerBase) {
+        if (this !== other) {
+            let dist = Vector3.distance(this.position, other.position);
+            let tackle_dist = 5;
+            if (dist < tackle_dist) {
+                other.set_state(Down.getInstance());
+            }
+        }
+    }
 
     public update() {
         let game = Game.getInstance();
@@ -101,6 +125,7 @@ abstract class PlayerBase extends MovingEntity {
         //-- in the right direction
         let maxd = 0;
         let target: IVector2 | undefined = undefined;
+        let teams = game.teams;
         for (let team of teams) {
             for (let player of team.players) {
                 if (player.side === this.side && !player.keeper && player !== this) {
@@ -140,7 +165,7 @@ abstract class PlayerBase extends MovingEntity {
         if (Math.abs(this.position.x - x) < min_dist && Math.abs(this.position.y - y) < min_dist) {
             return true
         }
-
+        let vel_inc = 0.2;
         let tmp = this.position.x + this.velocity.x * steps;
         if (this.position.x < x) {
             if (tmp < x) {
@@ -172,13 +197,7 @@ abstract class PlayerBase extends MovingEntity {
         let game = Game.getInstance();
         let ball = game.ball;
 
-        //-- if not is_controlled(f) then
         if (this !== game.get_controlled(this.side)) {
-            //--local futurme = plus(f, muls({ x=f.d.x, y=f.d.y }, 10))
-            //--local futurcon = plus(fcon, muls({ x=fcon.d.x, y=fcon.d.y }, 10))
-            //--local futurball = plus(ball, muls({ x=ball.d.x, y=ball.d.y }, 10))
-            //--local closer= dist_manh(futurme, futurball) < dist_manh(futurcon, futurball)
-            //-- if(dist and don or closer) then
             if (game.isPlaying() &&
                 this.ball_dist < ball_dist_thres &&
                 game.get_controlled(this.side).ball_dist > ball_dist_thres / 2) {
@@ -200,7 +219,7 @@ abstract class PlayerBase extends MovingEntity {
             return;
         }
 
-        let dest = attackpos[this.startposidx];
+        let dest = this.attackpos[this.startposidx];
         let sid = 1;
         if (game.is_throwin() && t.x * dest.x < 0) {
             sid = -0.5;
@@ -227,10 +246,12 @@ abstract class PlayerBase extends MovingEntity {
     public is_pass_ok(_relpos: IVector2, dist: number, dir: IVector2) {
 
         let game = Game.getInstance();
+
         if (game.is_throwin()) {
             return true;
         }
 
+        let teams = game.teams;
         for (let team of teams) {
             for (let player of team.players) {
                 let side = (player.side !== this.side);
@@ -266,7 +287,9 @@ abstract class PlayerBase extends MovingEntity {
             dribble.add(v.toVector2());
             dribblen += 1;
             balllasttouchedside = this.side;
-            man_with_ball = this;
+
+            let game = Game.getInstance();
+            game.man_with_ball = this;
         }
     }
 

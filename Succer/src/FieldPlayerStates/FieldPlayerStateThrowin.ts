@@ -36,7 +36,7 @@ class FieldPlayerStateThrowin extends State<FieldPlayer> {
         }
         dy *= f.side;
 
-        if (checktimer(throwin)) {
+        if (throwin.checktimer()) {
             game.throw_in(dy);
             f.ball_thrown();
             return;
@@ -71,7 +71,7 @@ class FieldPlayerStateThrowin extends State<FieldPlayer> {
         jersey_color(f);
         let pos = sprite_pos(f);
         f.lastflip = f.position.x > 0;
-        spr(48 + f.lastspr, pos.x, pos.y, 1, 1, f.lastflip);
+        Renderer.spr(48 + f.lastspr, pos.x, pos.y, 1, 1, f.lastflip);
         ball.position.x = f.position.x;
         ball.position.y = f.position.y;
         ball.position.z = 7;

@@ -1,4 +1,6 @@
-﻿
+﻿/// <reference path="./Game.ts" />
+/// <reference path="./SoccerPitch.ts" />
+
 enum TeamColor {
     Blue,
     Red
@@ -6,7 +8,7 @@ enum TeamColor {
 
 class SoccerTeam {
     //pointers to the team members
-    /*private*/ public players: PlayerBase[] = [];//new Array<PlayerBase>(5);
+    public players: PlayerBase[] = [];
 
     public constructor(public color: TeamColor) {
         this.createPlayers();

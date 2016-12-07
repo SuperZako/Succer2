@@ -18,6 +18,11 @@ class Throwin {
     constructor() {
     }
 
+    public checktimer() {
+        this.timer -= 1;
+        return this.timer < 0;
+    }
+
     public init_throwin(t: State<FieldPlayer>, p: Vector2, v: IVector2, m: number) {
         let game = Game.getInstance();
         let ball = game.ball;
@@ -39,6 +44,7 @@ class Throwin {
         let idx = game.side_to_idx(this.side);
         if (t === Goalkick.getInstance()) {
             // this.player = men[men.length + idx - 2]; //keeper
+            let teams = game.teams;
             this.player = teams[idx].players[5];
             this.player.set_state(KeeperStateRun.getInstance());
         } else {
@@ -49,6 +55,7 @@ class Throwin {
         game.setState(GameStateToBallout.getInstance());
         sfx(0);
     }
+
 }
 
 let throwin = new Throwin();

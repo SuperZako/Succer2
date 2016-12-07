@@ -3,20 +3,21 @@
 class SoccerBall extends MovingEntity {
     public w = 2;
     public h = 4;
-    public damp = 0.975;
+    // public damp = 0.975;
     // damp=0.95,
     public dampair = 0.985;
 
     constructor() {
         super();
+        this.dampFactor = 0.975;
     }
 
     public draw() {
-        spr(44, this.position.x - this.w, this.position.y - this.h - this.position.z);
+        Renderer.spr(44, this.position.x - this.w, this.position.y - this.h - this.position.z);
     }
 
     public drawshadow() {
-        spr(45, this.position.x - this.w + 1, this.position.y - this.h + 1);
+        Renderer.spr(45, this.position.x - this.w + 1, this.position.y - this.h + 1);
     }
 
     public update() {
@@ -31,7 +32,7 @@ class SoccerBall extends MovingEntity {
         if (this.position.z > 0) {
             this.velocity.z -= gravity;
         } else {
-            this.position.z = 0
+            this.position.z = 0;
             if (Math.abs(this.velocity.z) < 2 * gravity) {
                 this.velocity.z = 0;
             } else {
@@ -53,12 +54,12 @@ class SoccerBall extends MovingEntity {
         //--scoring_team
         //--todo check ball really entering the goal...
         if (game.isPlaying() &&
-            scoring_team === 0 &&
+            game.scoring_team === 0 &&
             (goals[0].scored(this) || goals[1].scored(this))) {
-            scoring_team = game.side_to_idx(this.position.y > 0 ? 1 : - 1);
-            kickoff_team = scoring_team;
-            game.score[scoring_team] += 1;
-            camlastpos = this.position.toVector2();//copy(this.position);
+            game.scoring_team = game.side_to_idx(this.position.y > 0 ? 1 : - 1);
+            game.kickoff_team = game.scoring_team;
+            game.score[game.scoring_team] += 1;
+            camlastpos = this.position.toVector2(); // copy(this.position);
             game.setState(GameStateGoalmarked.getInstance());
             sfx(0);
             sfx(15);
@@ -99,11 +100,11 @@ class SoccerBall extends MovingEntity {
 
         //--damping
         if (this.position.z < 0.1) {
-            damp(this);
+            this.damp();
         } else {
             //muls_in_place(this.velocity, this.dampair);
             this.velocity.multiply(this.dampair);
         }
-        bd.z *= this.damp;
+        bd.z *= this.dampFactor;
     }
 }

@@ -15,8 +15,14 @@ class GameStateGoalmarked extends State<Game> {
         this.timer = 60;
     }
 
+    public checktimer() {
+        this.timer -= 1;
+        return this.timer < 0;
+    }
+
+
     public update(game: Game) {
-        if (checktimer(this)) {
+        if (this.checktimer()) {
             game.setState(GameStateToKickoff.getInstance());
         }
     }

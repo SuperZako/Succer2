@@ -19,11 +19,10 @@ class Kickoff extends State<Game> {
         ball.position.multiply(0);
         //muls_in_place(ball.velocity, 0);
         ball.velocity.multiply(0);
-        scoring_team = 0;
+        game.scoring_team = 0;
         changing_side = false;
-        //for (let m of men) {
-        //    m.look_at(ball);
-        //}
+
+        let teams = game.teams;
         for (let team of teams) {
             for (let player of team.players) {
                 player.look_at(ball);

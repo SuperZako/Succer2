@@ -21,14 +21,14 @@ class Down extends State<FieldPlayer> {
         let down_spr = 37;
         let pos = sprite_pos(f);
         jersey_color(f);
-        spr(down_spr + f.lastspr, pos.x, pos.y, 1, 1, f.lastflip);
+        Renderer.spr(down_spr + f.lastspr, pos.x, pos.y, 1, 1, f.lastflip);
     }
 
     public update(f: FieldPlayer) {
-        if (checktimer(f)) {
+        if (f.checktimer()) {
             set_state_ok(f);
         } else {
-            damp(f);
+            f.damp();
         }
     }
 }

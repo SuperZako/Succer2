@@ -15,6 +15,7 @@ class GoalUp extends BaseGameEntity {
     }
     public scored(ball: SoccerBall) {
         let depth = this.depth;
+        let height = this.height;
         let left = this.leftPost.x;
         let right = this.rightPost.x;
         let top = this.leftPost.y;
@@ -23,7 +24,7 @@ class GoalUp extends BaseGameEntity {
             left = right;
             right = temp;
         }
-        return ball.position.z < depth
+        return ball.position.z < height
             && left < ball.position.x && ball.position.x < right
             && top + depth > Math.abs(ball.position.y)
             && Math.abs(ball.position.y) > top;
@@ -124,9 +125,9 @@ class GoalUp extends BaseGameEntity {
         }
         clip();
         let a = -height - top;
-        line(leftPost.x, a, leftPost.x, bottom);
-        line(leftPost.x, a, rightPost.x, a);
-        line(rightPost.x, a, rightPost.x, bottom);
+        Renderer.line(leftPost.x, a, leftPost.x, bottom);
+        Renderer.line(leftPost.x, a, rightPost.x, a);
+        Renderer.line(rightPost.x, a, rightPost.x, bottom);
     }
 
     public drawshadow() {

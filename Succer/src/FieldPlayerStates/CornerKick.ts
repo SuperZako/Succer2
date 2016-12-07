@@ -18,12 +18,13 @@ class CornerKick extends State<FieldPlayer> {
     }
     public ai(_p: ControllingPlayer) {
         //--todo : move the player
-        if (checktimer(throwin)) {
+        if (throwin.checktimer()) {
             kick_dir();
             throwin.player.set_state(FieldPlayerStateRunning.getInstance());
         }
     }
     public input(p: ControllingPlayer) {
+        let vel_inc = 0.2;
         if (btn(0, p.num)) {
             throwin.player.velocity.x -= vel_inc;
         }
@@ -62,6 +63,6 @@ class CornerKick extends State<FieldPlayer> {
         }
 
         let pos = sprite_pos(f);
-        spr(animoffset + f.lastspr * animfactor + f.animtimer, pos.x, pos.y, 1, 1, f.lastflip);
+        Renderer.spr(animoffset + f.lastspr * animfactor + f.animtimer, pos.x, pos.y, 1, 1, f.lastflip);
     }
 }

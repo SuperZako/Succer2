@@ -15,7 +15,7 @@ class KeeperStateOk extends State<GoalKeeper> {
         let pos = sprite_pos(k);
         let sp = pos.y < 0 ? 57 : 54;
         jersey_color(k);
-        spr(sp, pos.x, pos.y);
+        Renderer.spr(sp, pos.x, pos.y);
     }
 
     public update(k: GoalKeeper) {

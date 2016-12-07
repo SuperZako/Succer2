@@ -32,31 +32,17 @@ declare abstract class BaseGameEntity {
 }
 declare abstract class MovingEntity extends BaseGameEntity {
     velocity: Vector3;
+    dampFactor: number;
+    damp(): void;
 }
 declare class SoccerBall extends MovingEntity {
     w: number;
     h: number;
-    damp: number;
     dampair: number;
     constructor();
     draw(): void;
     drawshadow(): void;
     update(): void;
-}
-declare enum TeamColor {
-    Blue = 0,
-    Red = 1,
-}
-declare class SoccerTeam {
-    color: TeamColor;
-    players: PlayerBase[];
-    constructor(color: TeamColor);
-    /**
-
-     * creates all the players for this team
-
-    **/
-    private createPlayers();
 }
 declare class Region {
     readonly left: number;
@@ -132,6 +118,21 @@ declare class SoccerPitch {
     readonly height: number;
     draw(): void;
 }
+declare enum TeamColor {
+    Blue = 0,
+    Red = 1,
+}
+declare class SoccerTeam {
+    color: TeamColor;
+    players: PlayerBase[];
+    constructor(color: TeamColor);
+    /**
+
+     * creates all the players for this team
+
+    **/
+    private createPlayers();
+}
 declare class Game {
     private static instance;
     static getInstance(): Game;
@@ -142,6 +143,13 @@ declare class Game {
     ball: SoccerBall;
     controllingPlayers: ControllingPlayer[];
     private pitch;
+    teams: SoccerTeam[];
+    kickoff_team: number;
+    scoring_team: number;
+    starting_team: number;
+    man_with_ball: PlayerBase;
+    readonly full_time: number;
+    readonly half_time: number;
     private constructor();
     side_to_idx(s: number): number;
     idx_to_side(i: number): number;
@@ -152,6 +160,7 @@ declare class Game {
     setState(state: State<Game>): void;
     isPlaying(): boolean;
     is_throwin(): boolean;
+    distance_men_ball(): void;
     start_match(demo: boolean): void;
     update(): void;
     draw(): void;
@@ -178,7 +187,6 @@ declare abstract class PlayerBase extends MovingEntity {
     hasball: boolean;
     animtimer: number;
     timer: number;
-    damp: number;
     lastflip: boolean;
     justshot: number;
     ball_dist: number;
@@ -187,11 +195,14 @@ declare abstract class PlayerBase extends MovingEntity {
     keeper: boolean;
     teamcolors: number;
     skin: number;
+    private attackpos;
     constructor();
     abstract getState<T>(): State<T>;
     abstract set_state<T>(st: State<T>): void;
     abstract draw(): void;
     abstract drawshadow(): void;
+    checktimer(): boolean;
+    check_tackle(other: PlayerBase): void;
     update(): void;
     change_side(): void;
     can_kick(): boolean;
@@ -289,6 +300,7 @@ declare class GameStateGoalmarked extends State<Game> {
     timer: number;
     static getInstance(): GameStateGoalmarked;
     init(): void;
+    checktimer(): boolean;
     update(game: Game): void;
 }
 declare class GameStatePlaying extends State<Game> {
@@ -304,7 +316,9 @@ declare class GameStateToBallout extends State<Game> {
 declare class GameStateToKickoff extends State<Game> {
     private static instance;
     timer: number;
+    private startpos;
     static getInstance(): GameStateToKickoff;
+    checktimer(): boolean;
     init(): void;
     update(game: Game): void;
 }
@@ -356,6 +370,15 @@ declare class KeeperStateRun extends State<GoalKeeper> {
     draw(f: FieldPlayer): void;
 }
 declare namespace Renderer {
+    function initialize(): void;
+    function _print(_str: string, _x: number, _y: number, _col: number): void;
+    function print_outlined(t: string, x: number, y: number, c: number, oc: number): void;
+    function spr(n: number, x: number, y: number, _w?: number, _h?: number, _flip_x?: boolean, _flip_y?: boolean): void;
+    function camera(x?: number, y?: number): void;
+    function palt(_col?: number, _t?: boolean): void;
+    function line(x0: number, y0: number, x1: number, y1: number, _col?: number): void;
+    function rect(x0?: number, y0?: number, x1?: number, y1?: number, _col?: number): void;
+    function rectfill(x0: number, y0: number, x1: number, y1: number, col: number): void;
 }
 declare class Throwin {
     position: Vector2;
@@ -368,23 +391,15 @@ declare class Throwin {
     side: number;
     type: State<FieldPlayer>;
     constructor();
+    checktimer(): boolean;
     init_throwin(t: State<FieldPlayer>, p: Vector2, v: IVector2, m: number): void;
 }
 declare let throwin: Throwin;
-declare function _print(_str: string, _x: number, _y: number, _col: number): void;
-declare function spr(n: number, x: number, y: number, _w?: number, _h?: number, _flip_x?: boolean, _flip_y?: boolean): void;
 declare function btn(_i: number, _p?: number): boolean;
 declare function btnp(_i: number, _p?: number): boolean;
 declare function sfx(_n: number): void;
 declare function clip(_x?: number, _y?: number, _w?: number, _h?: number): void;
 declare function pal(_c0?: number, _c1?: number, _p?: number): void;
-declare let offsetX: number;
-declare let offsetY: number;
-declare function camera(x?: number, y?: number): void;
-declare function palt(_col?: number, _t?: boolean): void;
-declare function line(x0: number, y0: number, x1: number, y1: number, _col?: number): void;
-declare function rect(x0?: number, y0?: number, x1?: number, y1?: number, _col?: number): void;
-declare function rectfill(x0: number, y0: number, x1: number, y1: number, col: number): void;
 declare function color(_col?: number): void;
 declare function circ(_x?: number, _y?: number, _r?: number, _col?: number): void;
 declare function music(_n?: number, _a?: number, _b?: number): void;
@@ -393,8 +408,6 @@ declare let menu_inc: number;
 declare let timer: number;
 declare let blink: boolean;
 declare let mode: number;
-declare const full_time = 2700;
-declare let half_time: number;
 declare let max_val: number;
 declare let cos22_5: number;
 declare let sin22_5: number;
@@ -407,15 +420,13 @@ declare let skincolors: number[][];
 declare let max_kick: number;
 declare let dribbledist: number;
 declare let camtarget: Vector2;
-declare let startpos: IVector2[];
-declare let attackpos: IVector2[];
-declare let vel_inc: number;
 declare let min_vel: number;
 declare let ball_dist_thres: number;
-declare let menu: {
+declare class Menu {
     timer: number;
-};
-declare function print_outlined(t: string, x: number, y: number, c: number, oc: number): void;
+    checktimer(): boolean;
+}
+declare let menu: Menu;
 declare function dist_manh(a: IVector2, b: IVector2): number;
 declare function draw_marker(f: PlayerBase): void;
 declare function jersey_color(f: PlayerBase): void;
@@ -424,31 +435,19 @@ declare function sprite_pos(f: PlayerBase): {
     x: number;
     y: number;
 };
-declare let teams: SoccerTeam[];
 declare let balllasttouchedside: number;
 declare let dribble: Vector2;
 declare let dribblen: number;
-declare var man_with_ball: PlayerBase;
-declare function checktimer(a: {
-    timer: number;
-}): boolean;
 declare function segment_intersect(a1: IVector2, a2: IVector2, b1: IVector2, b2: IVector2): IVector2 | null;
 declare let ballsfxtime: number;
 declare function ballsfx(): void;
 declare function update_cam(): void;
-declare var kickoff_team: number;
 declare function bubble_sort(t: BaseGameEntity[]): void;
-declare function damp(m: SoccerBall | PlayerBase): void;
-declare function distance_men_ball(): void;
 declare var camlastpos: Vector2;
-declare var scoring_team: number;
 declare function print_mode(m: number, t: string): void;
 declare function set_state_ok(f: PlayerBase): void;
-declare var canvas: HTMLCanvasElement;
 declare var context: CanvasRenderingContext2D | null;
 declare function kick_dir(): void;
-declare function check_tackle(tackler: PlayerBase, other: PlayerBase): void;
-declare var starting_team: number;
 declare var changing_side: boolean;
 declare function changeshirt(i: number): void;
 declare function draw_button(s: number, x: number, y: number): void;

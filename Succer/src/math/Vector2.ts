@@ -58,7 +58,7 @@ class Vector2 implements IVector2 {
         let y = vector.y;
         let length = Math.sqrt(x * x + y * y);
 
-        if (length > 1e-6/*MathHelper.EpsilonDouble*/) {
+        if (length > MathHelper.EpsilonDouble) {
             vector.x /= length;
             vector.y /= length;
         }
@@ -74,9 +74,6 @@ class Vector2 implements IVector2 {
         let y = vector1.y - vector2.y;
         return x * x + y * y;
     }
-
-
-
 
     /**
     * calculates the dot product

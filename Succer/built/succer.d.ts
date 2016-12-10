@@ -14,6 +14,10 @@ declare class Vector3 implements IVector3 {
     static multiply(lhs: number, rhs: IVector3): Vector3;
     static distance(vector1: IVector3, vector2: IVector3): number;
     static distanceSquared(vector1: IVector3, vector2: IVector3): number;
+    /**
+     *   normalizes a 2D Vector
+     */
+    static normalize(vector: Vector3): Vector3;
     set(v: IVector3): this;
     add(rhs: IVector3): this;
     multiply(rhs: number): this;
@@ -87,6 +91,7 @@ declare class Vector2 implements IVector2 {
     multiply(rhs: number): this;
     length(): number;
     clamp(max: number): void;
+    normalize(): this;
     clone(): Vector2;
     toVector3(): Vector3;
 }
@@ -208,7 +213,7 @@ declare abstract class PlayerBase extends MovingEntity {
     can_kick(): boolean;
     touch_ball(dist: number): boolean;
     pass(): boolean;
-    go_to(x: number, y: number, min_dist: number, steps: number): boolean;
+    go_to(destination: Vector2, min_dist: number, _steps: number): boolean;
     run_to(x: number, y: number): boolean;
     findpos(): void;
     findpos2(t: IVector2): void;
@@ -222,8 +227,8 @@ declare class ControllingPlayer {
     player: PlayerBase;
     num: number;
     but: number;
-    ai: boolean;
-    constructor(player: PlayerBase, num: number, but?: number, ai?: boolean);
+    isAI: boolean;
+    constructor(player: PlayerBase, num: number, but?: number, isAI?: boolean);
     player_input(): void;
     tackle(): void;
     kick(): void;
@@ -369,6 +374,9 @@ declare class KeeperStateRun extends State<GoalKeeper> {
     static getInstance(): KeeperStateRun;
     draw(f: FieldPlayer): void;
 }
+declare namespace Images {
+    var ball: HTMLImageElement;
+}
 declare namespace Renderer {
     function initialize(): void;
     function _print(_str: string, _x: number, _y: number, _col: number): void;
@@ -379,6 +387,7 @@ declare namespace Renderer {
     function line(x0: number, y0: number, x1: number, y1: number, _col?: number): void;
     function rect(x0?: number, y0?: number, x1?: number, y1?: number, _col?: number): void;
     function rectfill(x0: number, y0: number, x1: number, y1: number, col: number): void;
+    function drawImage(image: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, _offsetX: number, _offsetY: number, _width?: number, _height?: number, _canvasOffsetX?: number, _canvasOffsetY?: number, _canvasImageWidth?: number, _canvasImageHeight?: number): void;
 }
 declare class Throwin {
     position: Vector2;
@@ -427,7 +436,6 @@ declare class Menu {
     checktimer(): boolean;
 }
 declare let menu: Menu;
-declare function dist_manh(a: IVector2, b: IVector2): number;
 declare function draw_marker(f: PlayerBase): void;
 declare function jersey_color(f: PlayerBase): void;
 declare function spr_from_dir(f: PlayerBase): void;
@@ -446,7 +454,6 @@ declare function bubble_sort(t: BaseGameEntity[]): void;
 declare var camlastpos: Vector2;
 declare function print_mode(m: number, t: string): void;
 declare function set_state_ok(f: PlayerBase): void;
-declare var context: CanvasRenderingContext2D | null;
 declare function kick_dir(): void;
 declare var changing_side: boolean;
 declare function changeshirt(i: number): void;

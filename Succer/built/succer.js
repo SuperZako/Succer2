@@ -46,6 +46,21 @@ var Vector3 = (function () {
         var z = vector1.z - vector2.z;
         return x * x + y * y + z * z;
     };
+    /**
+     *   normalizes a 2D Vector
+     */
+    Vector3.normalize = function (vector) {
+        var x = vector.x;
+        var y = vector.y;
+        var z = vector.z;
+        var length = Math.sqrt(x * x + y * y + z * z);
+        if (length > MathHelper.EpsilonDouble) {
+            vector.x /= length;
+            vector.y /= length;
+            vector.z /= length;
+        }
+        return vector;
+    };
     Vector3.prototype.set = function (v) {
         this.x = v.x;
         this.y = v.y;
@@ -105,7 +120,6 @@ var MovingEntity = (function (_super) {
         return _this;
     }
     MovingEntity.prototype.damp = function () {
-        //muls_in_place(m.velocity, m.damp)
         this.velocity.multiply(this.dampFactor);
     };
     return MovingEntity;
@@ -124,10 +138,12 @@ var SoccerBall = (function (_super) {
         return _this;
     }
     SoccerBall.prototype.draw = function () {
-        Renderer.spr(44, this.position.x - this.w, this.position.y - this.h - this.position.z);
+        //Renderer.spr(44, this.position.x - this.w, this.position.y - this.h - this.position.z);
+        Renderer.drawImage(Images.ball, this.position.x - this.w + 1, this.position.y - this.h + 1);
     };
     SoccerBall.prototype.drawshadow = function () {
-        Renderer.spr(45, this.position.x - this.w + 1, this.position.y - this.h + 1);
+        //Renderer.spr(45, this.position.x - this.w + 1, this.position.y - this.h + 1);
+        //Renderer.drawImage(Images.ball, this.position.x - this.w + 1, this.position.y - this.h + 1);
     };
     SoccerBall.prototype.update = function () {
         var game = Game.getInstance();
@@ -281,7 +297,7 @@ var Vector2 = (function () {
         var x = vector.x;
         var y = vector.y;
         var length = Math.sqrt(x * x + y * y);
-        if (length > 1e-6 /*MathHelper.EpsilonDouble*/) {
+        if (length > MathHelper.EpsilonDouble) {
             vector.x /= length;
             vector.y /= length;
         }
@@ -326,6 +342,16 @@ var Vector2 = (function () {
             this.multiply(factor);
         }
     };
+    Vector2.prototype.normalize = function () {
+        var x = this.x;
+        var y = this.y;
+        var length = Math.sqrt(x * x + y * y);
+        if (length > MathHelper.EpsilonDouble) {
+            this.x /= length;
+            this.y /= length;
+        }
+        return this;
+    };
     Vector2.prototype.clone = function () {
         return new Vector2(this.x, this.y);
     };
@@ -354,6 +380,7 @@ var GoalUp = (function (_super) {
     }
     GoalUp.prototype.scored = function (ball) {
         var depth = this.depth;
+        var height = this.height;
         var left = this.leftPost.x;
         var right = this.rightPost.x;
         var top = this.leftPost.y;
@@ -362,7 +389,7 @@ var GoalUp = (function (_super) {
             left = right;
             right = temp;
         }
-        return ball.position.z < depth
+        return ball.position.z < height
             && left < ball.position.x && ball.position.x < right
             && top + depth > Math.abs(ball.position.y)
             && Math.abs(ball.position.y) > top;
@@ -640,7 +667,7 @@ var Game = (function () {
             for (var _b = 0, _c = team.players; _b < _c.length; _b++) {
                 var player = _c[_b];
                 if (!player.keeper && player.getState() !== Down.getInstance() && player.getState() !== Tackle.getInstance()) {
-                    var d = dist_manh(player.position, ball.position);
+                    var d = Vector3.distance(player.position, ball.position);
                     player.ball_dist = d;
                     if (this.isPlaying()) {
                         var p = this.side_to_idx(player.side);
@@ -923,7 +950,7 @@ var PlayerBase = (function (_super) {
         _this.w = 4;
         _this.h = 8;
         _this.vel = 0;
-        _this.dir = new Vector2(0, 1); // { x: 0, y: 1 };
+        _this.dir = new Vector2(0, 1);
         //prevdir={ x = 0, y = 1 },
         _this.lastspr = 4;
         _this.hasball = false;
@@ -934,7 +961,7 @@ var PlayerBase = (function (_super) {
         _this.justshot = 0;
         _this.ball_dist = max_val;
         _this.keeper = false;
-        _this.skin = Math.floor(/*rnd(skincolors.length)*/ MathHelper.randInRange(0, skincolors.length)) /*+ 1*/;
+        _this.skin = Math.floor(MathHelper.randInRange(0, skincolors.length));
         _this.attackpos = [
             { x: 0, y: -0.2 },
             { x: 0.4, y: -0.1 },
@@ -952,9 +979,9 @@ var PlayerBase = (function (_super) {
     };
     PlayerBase.prototype.check_tackle = function (other) {
         if (this !== other) {
-            var dist = Vector3.distance(this.position, other.position);
-            var tackle_dist = 5;
-            if (dist < tackle_dist) {
+            var distance = Vector3.distance(this.position, other.position);
+            var tackleDistance = 5;
+            if (distance < tackleDistance) {
                 other.set_state(Down.getInstance());
             }
         }
@@ -1024,7 +1051,7 @@ var PlayerBase = (function (_super) {
                 if (player.side === this.side && !player.keeper && player !== this) {
                     var front = 20;
                     var futm = Vector3.add(player.position, Vector3.multiply(front, player.velocity));
-                    var dist = Vector3.distance(this.position, { x: futm.x, y: futm.y, z: 0 });
+                    var dist = Vector3.distance(this.position, futm);
                     if (dist < 96) {
                         var relpos = Vector3.subtract(futm, this.position);
                         var dir = Vector2.multiply(1 / dist, relpos);
@@ -1052,37 +1079,21 @@ var PlayerBase = (function (_super) {
         }
         return false;
     };
-    PlayerBase.prototype.go_to = function (x, y, min_dist, steps) {
-        if (Math.abs(this.position.x - x) < min_dist && Math.abs(this.position.y - y) < min_dist) {
+    PlayerBase.prototype.go_to = function (destination, min_dist, _steps) {
+        // destination
+        var distane = Vector2.distance(destination, this.position);
+        if (distane < min_dist) {
             return true;
         }
         var vel_inc = 0.2;
-        var tmp = this.position.x + this.velocity.x * steps;
-        if (this.position.x < x) {
-            if (tmp < x) {
-                this.velocity.x += vel_inc;
-            }
-        }
-        else {
-            if (tmp > x) {
-                this.velocity.x -= vel_inc;
-            }
-        }
-        tmp = this.position.y + this.velocity.y * steps;
-        if (this.position.y < y) {
-            if (tmp < y) {
-                this.velocity.y += vel_inc;
-            }
-        }
-        else {
-            if (tmp > y) {
-                this.velocity.y -= vel_inc;
-            }
-        }
+        var to = Vector2.subtract(destination, this.position);
+        to.normalize();
+        to.multiply(vel_inc);
+        this.velocity.add(to.toVector3());
         return false;
     };
     PlayerBase.prototype.run_to = function (x, y) {
-        return this.go_to(x, y, dribbledist - 1, 0);
+        return this.go_to(new Vector2(x, y), dribbledist - 1, 0);
     };
     PlayerBase.prototype.findpos = function () {
         var game = Game.getInstance();
@@ -1124,7 +1135,6 @@ var PlayerBase = (function (_super) {
         var ball = Game.getInstance().ball;
         var prevball = ball.position.clone();
         ball.position.multiply(0.8);
-        //plus_in_place(ball.position, muls(plus(this.position, muls(this.dir, 3)), 0.2))//-- + lerp to wanted_ball
         ball.position.add(Vector3.multiply(0.2, Vector3.add(this.position, Vector2.multiply(3, this.dir).toVector3()))); // -- + lerp to wanted_ball
     };
     PlayerBase.prototype.is_pass_ok = function (_relpos, dist, dir) {
@@ -1184,17 +1194,17 @@ var PlayerBase = (function (_super) {
 }(MovingEntity));
 /// <reference path="./PlayerBase.ts" />
 var ControllingPlayer = (function () {
-    function ControllingPlayer(player, num, but, ai) {
+    function ControllingPlayer(player, num, but, isAI) {
         if (but === void 0) { but = 0; }
-        if (ai === void 0) { ai = false; }
+        if (isAI === void 0) { isAI = false; }
         this.player = player;
         this.num = num;
         this.but = but;
-        this.ai = ai;
+        this.isAI = isAI;
     }
     ControllingPlayer.prototype.player_input = function () {
         var game = Game.getInstance();
-        if (this.ai || game.demo) {
+        if (this.isAI || game.demo) {
             //if (this.man.getState().ai !== undefined)
             this.player.getState().ai(this);
         }
@@ -1254,7 +1264,6 @@ var FieldPlayer = (function (_super) {
     };
     FieldPlayer.prototype.set_state = function (state) {
         this.state = state;
-        //if (st !== null && st.start !== undefined)
         state.start(this);
     };
     FieldPlayer.prototype.draw = function () {
@@ -1404,8 +1413,8 @@ var FieldPlayerStateOK = (function (_super) {
             //-- and a team mate is in front of the ball... let him handle the situation
             if ((f.hasball || f.run_to(ball.position.x, ball.position.y)) && ball.position.z < 8 && f.justshot <= 0) {
                 //-- try to shoot
-                var goal = { x: 0, y: f.side * pitch.top };
-                if (dist_manh(goal, f.position) < 75) {
+                var goal = { x: 0, y: f.side * pitch.top, z: 0 };
+                if (Vector3.distance(goal, f.position) < 75) {
                     f.dir = Vector2.normalize(Vector2.subtract(goal, f.position.toVector2()));
                     p.but = MathHelper.randInRange(0, max_kick / 2) + max_kick / 3;
                     p.kick();
@@ -1690,8 +1699,8 @@ var GameStateBallin = (function (_super) {
         var ball = game.ball;
         ball.position.x = throwin.ballpos.x;
         ball.position.y = throwin.ballpos.y;
-        //muls_in_place(ball.velocity, 0);
-        ball.velocity.multiply(0);
+        // ball.velocity.multiply(0);
+        ball.velocity = Vector3.Zero;
         throwin.player.set_state(throwin.type);
     };
     return GameStateBallin;
@@ -1735,8 +1744,8 @@ var GameStatePlaying = (function (_super) {
         return this.instance;
     };
     GameStatePlaying.prototype.init = function (game) {
-        game.controllingPlayers[0].ai = (mode === 2);
-        game.controllingPlayers[1].ai = (mode > 0);
+        game.controllingPlayers[0].isAI = (mode === 2);
+        game.controllingPlayers[1].isAI = (mode > 0);
     };
     return GameStatePlaying;
 }(State));
@@ -1755,7 +1764,7 @@ var GameStateToBallout = (function (_super) {
         //-- todo : tout le monde se met en place
         var l = Vector3.distance(throwin.player.position, { x: throwin.position.x, y: throwin.position.y, z: 0 }) / throwin.dist;
         camtarget = Vector2.add(Vector2.multiply(1 - l, throwin.ballpos), Vector2.multiply(l, camlastpos));
-        if (throwin.player.go_to(throwin.position.x, throwin.position.y, 2, 10)) {
+        if (throwin.player.go_to(throwin.position, 2, 10)) {
             game.setState(GameStateBallin.getInstance());
         }
     };
@@ -1799,9 +1808,7 @@ var GameStateToKickoff = (function (_super) {
             set_state_ok(player);
         }
         //-- keepers
-        // men[men.length - 1 - 1].set_state(KeeperStateRun.getInstance());
         teams[0].players[5].set_state(KeeperStateRun.getInstance());
-        // men[men.length - 1].set_state(KeeperStateRun.getInstance());
         teams[1].players[5].set_state(KeeperStateRun.getInstance());
     };
     GameStateToKickoff.prototype.update = function (game) {
@@ -2156,11 +2163,17 @@ var KeeperStateRun = (function (_super) {
     return KeeperStateRun;
 }(State));
 KeeperStateRun.instance = new KeeperStateRun();
+var Images;
+(function (Images) {
+    Images.ball = new Image();
+    Images.ball.src = "images/ball.png";
+})(Images || (Images = {}));
 var Renderer;
 (function (Renderer) {
     var offsetX = 0;
     var offsetY = 0;
     var canvas;
+    var context;
     function initialize() {
         canvas = document.getElementById("canvas");
         canvas.width = 128;
@@ -2281,6 +2294,19 @@ var Renderer;
         }
     }
     Renderer.rectfill = rectfill;
+    function drawImage(image, _offsetX, _offsetY, _width, _height, _canvasOffsetX, _canvasOffsetY, _canvasImageWidth, _canvasImageHeight) {
+        _offsetX -= offsetX;
+        _offsetY -= offsetY;
+        // y0 -= offsetY;
+        // y1 -= offsetY;
+        if (context) {
+            context.save();
+            //context.drawImage(image, _offsetX, _offsetY, 7, 7);//, width, height, canvasOffsetX, canvasOffsetY, canvasImageWidth, canvasImageHeight);
+            context.drawImage(image, 0, 0, 7, 7, _offsetX, _offsetY, 7, 7);
+            context.restore();
+        }
+    }
+    Renderer.drawImage = drawImage;
 })(Renderer || (Renderer = {}));
 /// <reference path="./SoccerTeam.ts" />
 var Throwin = (function () {
@@ -2431,9 +2457,9 @@ var Menu = (function () {
     return Menu;
 }());
 var menu = new Menu(); // { timer: 10 };
-function dist_manh(a, b) {
-    return Math.abs(b.x - a.x) + Math.abs(b.y - a.y);
-}
+//function dist_manh(a: IVector2, b: IVector2) {
+//    return Math.abs(b.x - a.x) + Math.abs(b.y - a.y);
+//}
 function draw_marker(f) {
     var sp = 29;
     if (f.can_kick()) {
@@ -2577,8 +2603,6 @@ function set_state_ok(f) {
         f.set_state(FieldPlayerStateOK.getInstance());
     }
 }
-// var canvas: HTMLCanvasElement;
-var context;
 function kick_dir() {
     var game = Game.getInstance();
     var ball = game.ball;

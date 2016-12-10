@@ -104,7 +104,7 @@ class Game {
         for (let team of teams) {
             for (let player of team.players) {
                 if (!player.keeper && player.getState() !== Down.getInstance() && player.getState() !== Tackle.getInstance()) {
-                    let d = dist_manh(player.position, ball.position);
+                    let d = Vector3.distance(player.position, ball.position);
                     player.ball_dist = d;
                     if (this.isPlaying()) {
                         let p = this.side_to_idx(player.side);
@@ -209,7 +209,7 @@ class Game {
             this.state.update(this);
         }
 
-        update_cam()
+        update_cam();
 
         if (this.demo) {
             if (menu.checktimer()) {

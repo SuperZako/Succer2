@@ -14,7 +14,7 @@ class GameStateToBallout extends State<Game> {
         //-- todo : tout le monde se met en place
         let l = Vector3.distance(throwin.player.position, { x: throwin.position.x, y: throwin.position.y, z: 0 }) / throwin.dist;
         camtarget = Vector2.add(Vector2.multiply(1 - l, throwin.ballpos), Vector2.multiply(l, camlastpos));
-        if (throwin.player.go_to(throwin.position.x, throwin.position.y, 2, 10)) {
+        if (throwin.player.go_to(throwin.position, 2, 10)) {
             game.setState(GameStateBallin.getInstance());
         }
     }

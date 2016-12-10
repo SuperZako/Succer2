@@ -36,9 +36,7 @@ class GameStateToKickoff extends State<Game> {
             set_state_ok(player);
         }
         //-- keepers
-        // men[men.length - 1 - 1].set_state(KeeperStateRun.getInstance());
         teams[0].players[5].set_state(KeeperStateRun.getInstance());
-        // men[men.length - 1].set_state(KeeperStateRun.getInstance());
         teams[1].players[5].set_state(KeeperStateRun.getInstance());
     }
 

@@ -8,7 +8,7 @@ abstract class PlayerBase extends MovingEntity {
     h = 8;
 
     vel = 0;
-    dir = new Vector2(0, 1); // { x: 0, y: 1 };
+    dir = new Vector2(0, 1); 
     //prevdir={ x = 0, y = 1 },
     lastspr = 4;
     hasball = false;
@@ -22,7 +22,7 @@ abstract class PlayerBase extends MovingEntity {
     side: number; // = p * 2 - 1;
     keeper = false;
     teamcolors: number;//= p + 1;
-    skin = Math.floor(/*rnd(skincolors.length)*/MathHelper.randInRange(0, skincolors.length)) /*+ 1*/;
+    skin = Math.floor(MathHelper.randInRange(0, skincolors.length));
 
     private attackpos: IVector2[] = [
         { x: 0, y: -0.2 },
@@ -52,9 +52,9 @@ abstract class PlayerBase extends MovingEntity {
 
     public check_tackle(other: PlayerBase) {
         if (this !== other) {
-            let dist = Vector3.distance(this.position, other.position);
-            let tackle_dist = 5;
-            if (dist < tackle_dist) {
+            let distance = Vector3.distance(this.position, other.position);
+            let tackleDistance = 5;
+            if (distance < tackleDistance) {
                 other.set_state(Down.getInstance());
             }
         }
@@ -129,9 +129,9 @@ abstract class PlayerBase extends MovingEntity {
         for (let team of teams) {
             for (let player of team.players) {
                 if (player.side === this.side && !player.keeper && player !== this) {
-                    let front = 20
+                    let front = 20;
                     let futm = Vector3.add(player.position, Vector3.multiply(front, player.velocity));
-                    let dist = Vector3.distance(this.position, { x: futm.x, y: futm.y, z: 0 });
+                    let dist = Vector3.distance(this.position, futm);
                     if (dist < 96) {
                         let relpos = Vector3.subtract(futm, this.position);
                         let dir = Vector2.multiply(1 / dist, relpos);
@@ -161,36 +161,23 @@ abstract class PlayerBase extends MovingEntity {
     }
 
 
-    public go_to(x: number, y: number, min_dist: number, steps: number) {
-        if (Math.abs(this.position.x - x) < min_dist && Math.abs(this.position.y - y) < min_dist) {
-            return true
+    public go_to(destination: Vector2, min_dist: number, _steps: number) {
+        // destination
+        let distane = Vector2.distance(destination, this.position);
+        if (distane < min_dist) {
+            return true;
         }
         let vel_inc = 0.2;
-        let tmp = this.position.x + this.velocity.x * steps;
-        if (this.position.x < x) {
-            if (tmp < x) {
-                this.velocity.x += vel_inc;
-            }
-        } else {
-            if (tmp > x) {
-                this.velocity.x -= vel_inc;
-            }
-        }
-        tmp = this.position.y + this.velocity.y * steps
-        if (this.position.y < y) {
-            if (tmp < y) {
-                this.velocity.y += vel_inc;
-            }
-        } else {
-            if (tmp > y) {
-                this.velocity.y -= vel_inc;
-            }
-        }
+        let to = Vector2.subtract(destination, this.position);
+        to.normalize();
+        to.multiply(vel_inc);
+        this.velocity.add(to.toVector3());
+
         return false;
     }
 
     public run_to(x: number, y: number) {
-        return this.go_to(x, y, dribbledist - 1, 0)
+        return this.go_to(new Vector2(x, y), dribbledist - 1, 0)
     }
 
     public findpos() {
@@ -238,7 +225,6 @@ abstract class PlayerBase extends MovingEntity {
 
         let prevball = ball.position.clone();
         ball.position.multiply(0.8);
-        //plus_in_place(ball.position, muls(plus(this.position, muls(this.dir, 3)), 0.2))//-- + lerp to wanted_ball
         ball.position.add(Vector3.multiply(0.2, Vector3.add(this.position, Vector2.multiply(3, this.dir).toVector3()))); // -- + lerp to wanted_ball
     }
 

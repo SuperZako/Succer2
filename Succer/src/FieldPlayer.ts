@@ -17,7 +17,6 @@ class FieldPlayer extends PlayerBase {
 
     public set_state(state: State<FieldPlayer>) {
         this.state = state;
-        //if (st !== null && st.start !== undefined)
         state.start(this);
     }
 

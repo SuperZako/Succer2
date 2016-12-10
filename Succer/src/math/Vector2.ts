@@ -115,6 +115,18 @@ class Vector2 implements IVector2 {
         }
     }
 
+    public normalize() {
+        let x = this.x;
+        let y = this.y;
+        let length = Math.sqrt(x * x + y * y);
+
+        if (length > MathHelper.EpsilonDouble) {
+            this.x /= length;
+            this.y /= length;
+        }
+        return this;
+    }
+
     public clone() {
         return new Vector2(this.x, this.y);
     }

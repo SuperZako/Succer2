@@ -13,11 +13,13 @@ class SoccerBall extends MovingEntity {
     }
 
     public draw() {
-        Renderer.spr(44, this.position.x - this.w, this.position.y - this.h - this.position.z);
+        //Renderer.spr(44, this.position.x - this.w, this.position.y - this.h - this.position.z);
+        Renderer.drawImage(Images.ball, this.position.x - this.w + 1, this.position.y - this.h + 1);
     }
 
     public drawshadow() {
-        Renderer.spr(45, this.position.x - this.w + 1, this.position.y - this.h + 1);
+        //Renderer.spr(45, this.position.x - this.w + 1, this.position.y - this.h + 1);
+        //Renderer.drawImage(Images.ball, this.position.x - this.w + 1, this.position.y - this.h + 1);
     }
 
     public update() {

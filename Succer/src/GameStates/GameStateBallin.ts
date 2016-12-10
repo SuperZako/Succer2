@@ -12,8 +12,10 @@ class GameStateBallin extends State<Game> {
         let ball = game.ball;
         ball.position.x = throwin.ballpos.x;
         ball.position.y = throwin.ballpos.y;
-        //muls_in_place(ball.velocity, 0);
-        ball.velocity.multiply(0);
+
+        // ball.velocity.multiply(0);
+        ball.velocity = Vector3.Zero;
+
         throwin.player.set_state(throwin.type);
     }
 }

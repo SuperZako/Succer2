@@ -10,7 +10,7 @@ class GameStatePlaying extends State<Game> {
     }
 
     public init(game: Game) {
-        game.controllingPlayers[0].ai = (mode === 2);
-        game.controllingPlayers[1].ai = (mode > 0);
+        game.controllingPlayers[0].isAI = (mode === 2);
+        game.controllingPlayers[1].isAI = (mode > 0);
     }
 }

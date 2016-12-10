@@ -67,6 +67,7 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="images\ball.png" />
     <Content Include="packages.config" />
     <Content Include="tsconfig.json" />
     <Content Include="tslint.json" />
@@ -113,6 +114,7 @@
     <TypeScriptCompile Include="src\GoalKeeperStates\KeeperStateOk.ts" />
     <TypeScriptCompile Include="src\GoalKeeperStates\KeeperStateRun.ts" />
     <TypeScriptCompile Include="src\GoalUp.ts" />
+    <TypeScriptCompile Include="src\Images.ts" />
     <TypeScriptCompile Include="src\math\MathHelper.ts" />
     <TypeScriptCompile Include="src\math\Vector2.ts" />
     <TypeScriptCompile Include="src\math\Vector3.ts" />

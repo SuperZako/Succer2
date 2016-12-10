@@ -111,9 +111,9 @@ class Menu {
 }
 let menu = new Menu();// { timer: 10 };
 
-function dist_manh(a: IVector2, b: IVector2) {
-    return Math.abs(b.x - a.x) + Math.abs(b.y - a.y);
-}
+//function dist_manh(a: IVector2, b: IVector2) {
+//    return Math.abs(b.x - a.x) + Math.abs(b.y - a.y);
+//}
 
 
 function draw_marker(f: PlayerBase) {
@@ -268,9 +268,6 @@ function set_state_ok(f: PlayerBase) {
         f.set_state(FieldPlayerStateOK.getInstance());
     }
 }
-
-// var canvas: HTMLCanvasElement;
-var context: CanvasRenderingContext2D | null;
 
 function kick_dir() {
     let game = Game.getInstance();

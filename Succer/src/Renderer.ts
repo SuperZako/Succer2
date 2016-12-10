@@ -3,7 +3,7 @@
     let offsetY = 0;
 
     let canvas: HTMLCanvasElement;
-
+    let context: CanvasRenderingContext2D | null;
     export function initialize() {
         canvas = <HTMLCanvasElement>document.getElementById("canvas");
         canvas.width = 128;
@@ -111,6 +111,19 @@
             }
 
             context.fillRect(x0, y0, x1 - x0, y1 - y0);
+            context.restore();
+        }
+    }
+
+    export function drawImage(image: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, _offsetX: number, _offsetY: number, _width?: number, _height?: number, _canvasOffsetX?: number, _canvasOffsetY?: number, _canvasImageWidth?: number, _canvasImageHeight?: number): void {
+        _offsetX -= offsetX;
+        _offsetY -= offsetY;
+        // y0 -= offsetY;
+        // y1 -= offsetY;
+        if (context) {
+            context.save();
+            //context.drawImage(image, _offsetX, _offsetY, 7, 7);//, width, height, canvasOffsetX, canvasOffsetY, canvasImageWidth, canvasImageHeight);
+            context.drawImage(image, 0, 0, 7, 7, _offsetX, _offsetY, 7, 7);
             context.restore();
         }
     }

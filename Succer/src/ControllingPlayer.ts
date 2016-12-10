@@ -1,14 +1,14 @@
 ﻿/// <reference path="./PlayerBase.ts" />
 
 class ControllingPlayer {
-    constructor(public player: PlayerBase, public num: number, public but = 0, public ai = false) {
+    constructor(public player: PlayerBase, public num: number, public but = 0, public isAI = false) {
     }
 
 
 
     public player_input() {
         let game = Game.getInstance();
-        if (this.ai || game.demo) {
+        if (this.isAI || game.demo) {
             //if (this.man.getState().ai !== undefined)
             this.player.getState().ai(this);
         } else {

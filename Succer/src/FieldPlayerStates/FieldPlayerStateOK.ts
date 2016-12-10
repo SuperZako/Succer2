@@ -29,10 +29,10 @@ class FieldPlayerStateOK extends State<FieldPlayer> {
 
             if ((f.hasball || f.run_to(ball.position.x, ball.position.y)) && ball.position.z < 8 && f.justshot <= 0) {
                 //-- try to shoot
-                let goal = { x: 0, y: f.side * pitch.top };
-                if (dist_manh(goal, f.position) < 75) {
+                let goal = { x: 0, y: f.side * pitch.top, z: 0 };
+                if (Vector3.distance(goal, f.position) < 75) {
                     f.dir = Vector2.normalize(Vector2.subtract(goal, f.position.toVector2()));
-                    p.but = /*rnd(max_kick / 2)*/MathHelper.randInRange(0, max_kick / 2) + max_kick / 3;
+                    p.but = MathHelper.randInRange(0, max_kick / 2) + max_kick / 3;
                     p.kick();
                     return;
                 }

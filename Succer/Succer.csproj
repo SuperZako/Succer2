@@ -68,6 +68,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="images\ball.png" />
+    <Content Include="lib\OrbitControls.js" />
+    <Content Include="lib\Stats.js" />
+    <Content Include="lib\three.min.js" />
     <Content Include="packages.config" />
     <Content Include="tsconfig.json" />
     <Content Include="tslint.json" />
@@ -91,6 +94,7 @@
     <TypeScriptCompile Include="built\succer.d.ts" />
     <TypeScriptCompile Include="src\app.ts" />
     <TypeScriptCompile Include="src\BaseGameEntity.ts" />
+    <TypeScriptCompile Include="src\Billboard.ts" />
     <TypeScriptCompile Include="src\common\Region.ts" />
     <TypeScriptCompile Include="src\ControllingPlayer.ts" />
     <TypeScriptCompile Include="src\FieldPlayer.ts" />
@@ -115,6 +119,7 @@
     <TypeScriptCompile Include="src\GoalKeeperStates\KeeperStateRun.ts" />
     <TypeScriptCompile Include="src\GoalUp.ts" />
     <TypeScriptCompile Include="src\Images.ts" />
+    <TypeScriptCompile Include="src\main.ts" />
     <TypeScriptCompile Include="src\math\MathHelper.ts" />
     <TypeScriptCompile Include="src\math\Vector2.ts" />
     <TypeScriptCompile Include="src\math\Vector3.ts" />
@@ -126,7 +131,12 @@
     <TypeScriptCompile Include="src\SoccerTeam.ts" />
     <TypeScriptCompile Include="src\State.ts" />
     <TypeScriptCompile Include="src\succer.ts" />
+    <TypeScriptCompile Include="src\TextureAnimator.ts" />
+    <TypeScriptCompile Include="src\THREEx.FullScreen.ts" />
+    <TypeScriptCompile Include="src\THREEx.KeyboardState.ts" />
+    <TypeScriptCompile Include="src\THREEx.WindowResize.ts" />
     <TypeScriptCompile Include="src\Throwin.ts" />
+    <TypeScriptCompile Include="src\_SoccerPitch.ts" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />

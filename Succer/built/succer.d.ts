@@ -1,4 +1,8 @@
-﻿interface IVector3 {
+﻿/// <reference types="three" />
+declare class _SoccerPitch {
+    constructor(scene: THREE.Scene);
+}
+interface IVector3 {
     x: number;
     y: number;
     z: number;
@@ -173,6 +177,28 @@ declare class Game {
 }
 declare var cnt: number;
 declare function animate(): void;
+interface Frame {
+}
+declare class Animations {
+}
+declare class TextureAnimator {
+    private texture;
+    private tilesHorizontal;
+    private tilesVertical;
+    private numberOfTiles;
+    private tileDisplayDuration;
+    private currentDisplayTime;
+    private currentTile;
+    constructor(texture: THREE.Texture, tilesHorizontal: number, tilesVertical: number, numberOfTiles: number, tileDisplayDuration: number);
+    update(milliSec: number): void;
+}
+declare class Billboard {
+    private textureAnimator;
+    private mesh;
+    constructor(scene: THREE.Scene);
+    quaternion(newQuaternion: THREE.Quaternion): void;
+    update(milliSec: number): void;
+}
 declare namespace MathHelper {
     const EpsilonDouble = 0.000001;
     const Pi: number;
@@ -376,6 +402,95 @@ declare class KeeperStateRun extends State<GoalKeeper> {
 }
 declare namespace Images {
     var ball: HTMLImageElement;
+}
+/** @namespace */
+declare namespace THREEx {
+    /**
+     * - NOTE: it would be quite easy to push event-driven too
+     *   - microevent.js for events handling
+     *   - in this._onkeyChange, generate a string from the DOM event
+     *   - use this as event name
+    */
+    class KeyboardState {
+        private domElement;
+        private static MODIFIERS;
+        private static ALIAS;
+        private keyCodes;
+        private modifiers;
+        constructor(domElement?: Node);
+        /**
+         * To stop listening of the keyboard events
+        */
+        destroy(): void;
+        /**
+         * query keyboard state to know if a key is pressed of not
+         *
+         * @param {String} keyDesc the description of the key. format : modifiers+key e.g shift+A
+         * @returns {Boolean} true if the key is pressed, false otherwise
+        */
+        pressed(keyDesc: string): boolean;
+        /**
+         * return true if an event match a keyDesc
+         * @param  {KeyboardEvent} event   keyboard event
+         * @param  {String} keyDesc string description of the key
+         * @return {Boolean}         true if the event match keyDesc, false otherwise
+         */
+        eventMatches(event: KeyboardEvent, keyDesc: string): boolean;
+        private _onBlur;
+        /**
+         * to process the keyboard dom event
+        */
+        private _onKeyChange;
+    }
+}
+/** @namespace */
+declare namespace THREEx {
+    /**
+     * Update renderer and camera when the window is resized
+     *
+     * @param {Object} renderer the renderer to update
+     * @param {Object} Camera the camera to update
+    */
+    function WindowResize(renderer: THREE.Renderer, camera: THREE.PerspectiveCamera): {
+        stop: () => void;
+    };
+}
+/** @namespace */
+declare namespace THREEx {
+    namespace FullScreen {
+        /**
+         * test if it is possible to have fullscreen
+         *
+         * @returns {Boolean} true if fullscreen API is available, false otherwise
+        */
+        function available(): boolean;
+        /**
+         * test if fullscreen is currently activated
+         *
+         * @returns {Boolean} true if fullscreen is currently activated, false otherwise
+        */
+        function activated(): boolean;
+        /**
+         * Request fullscreen on a given element
+         * @param {DomElement} element to make fullscreen. optional. default to document.body
+        */
+        function request(element: Element): void;
+        /**
+         * Cancel fullscreen
+        */
+        function cancel(): void;
+        /**
+         * Bind a key to renderer screenshot
+         * usage: THREEx.FullScreen.bindKey({ charCode : 'a'.charCodeAt(0) });
+        */
+        function bindKey(opts: any): {
+            unbind: () => void;
+        };
+    }
+}
+declare namespace Main {
+    function init(): void;
+    function animate(): void;
 }
 declare namespace Renderer {
     function initialize(): void;

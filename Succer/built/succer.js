@@ -3,6 +3,20 @@
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+var _SoccerPitch = (function () {
+    function _SoccerPitch(scene) {
+        var texture = new THREE.TextureLoader().load('images/pitch1L.jpg');
+        var greenMaterial = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+        var planeGeometry = new THREE.PlaneGeometry(1024, 1024); // 幅20、高さ10の平面
+        var plane = new THREE.Mesh(planeGeometry, greenMaterial);
+        scene.add(plane);
+        //GridHelper(大きさ, １マスの大きさ)
+        //var grid = new THREE.GridHelper(1000, 100);
+        //シーンオブジェクトに追加
+        //scene.add(grid);
+    }
+    return _SoccerPitch;
+}());
 var Vector3 = (function () {
     function Vector3(x, y, z) {
         if (x === void 0) { x = 0; }
@@ -915,6 +929,69 @@ window.onload = function () {
     //game = new Game();  
     animate();
 };
+var Animations = (function () {
+    function Animations() {
+    }
+    return Animations;
+}());
+var TextureAnimator = (function () {
+    function TextureAnimator(texture, tilesHorizontal, tilesVertical, numberOfTiles, tileDisplayDuration) {
+        // note: texture passed by reference, will be updated by the update function.
+        this.texture = texture;
+        this.tilesHorizontal = tilesHorizontal;
+        this.tilesVertical = tilesVertical;
+        this.numberOfTiles = numberOfTiles;
+        this.tileDisplayDuration = tileDisplayDuration;
+        this.currentDisplayTime = 0; // how long has the current image been displayed?
+        this.currentTile = 0; // which image is currently being displayed?
+        //this.tilesHorizontal = tilesHoriz;
+        //this.tilesVertical = tilesVert;
+        // how many images does this spritesheet contain?
+        //  usually equals tilesHoriz * tilesVert, but not necessarily,
+        //  if there at blank tiles at the bottom of the spritesheet.
+        //this.numberOfTiles = numTiles;
+        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(1 / this.tilesHorizontal, 1 / this.tilesVertical);
+        // how long should each image be displayed?
+        //this.tileDisplayDuration = tileDispDuration;
+    }
+    TextureAnimator.prototype.update = function (milliSec) {
+        var texture = this.texture;
+        this.currentDisplayTime += milliSec;
+        while (this.currentDisplayTime > this.tileDisplayDuration) {
+            this.currentDisplayTime -= this.tileDisplayDuration;
+            this.currentTile++;
+            if (this.currentTile == this.numberOfTiles)
+                this.currentTile = 0;
+            var currentColumn = this.currentTile % this.tilesHorizontal;
+            texture.offset.x = currentColumn / this.tilesHorizontal;
+            var currentRow = Math.floor(this.currentTile / this.tilesHorizontal);
+            texture.offset.y = currentRow / this.tilesVertical;
+        }
+    };
+    return TextureAnimator;
+}());
+/// <reference path="./TextureAnimator.ts" />
+var Billboard = (function () {
+    function Billboard(scene) {
+        var texture = new THREE.TextureLoader().load('images/run.png');
+        this.textureAnimator = new TextureAnimator(texture, 10, 1, 10, 75); // texture, #horiz, #vert, #total, duration.
+        var material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+        var geometry = new THREE.PlaneGeometry(36, 36, 1, 1);
+        this.mesh = new THREE.Mesh(geometry, material);
+        var mesh = this.mesh;
+        mesh.position.set(-50, 8, 0);
+        scene.add(mesh);
+    }
+    Billboard.prototype.quaternion = function (newQuaternion) {
+        var mesh = this.mesh;
+        mesh.quaternion.copy(newQuaternion);
+    };
+    Billboard.prototype.update = function (milliSec) {
+        this.textureAnimator.update(milliSec);
+    };
+    return Billboard;
+}());
 var MathHelper;
 (function (MathHelper) {
     MathHelper.EpsilonDouble = 1e-6;
@@ -2168,6 +2245,415 @@ var Images;
     Images.ball = new Image();
     Images.ball.src = "images/ball.png";
 })(Images || (Images = {}));
+// THREEx.KeyboardState.js keep the current state of the keyboard.
+// It is possible to query it at any time. No need of an event.
+// This is particularly convenient in loop driven case, like in
+// 3D demos or games.
+//
+// # Usage
+//
+// **Step 1**: Create the object
+//
+// ```var keyboard	= new THREEx.KeyboardState();```
+//
+// **Step 2**: Query the keyboard state
+//
+// This will return true if shift and A are pressed, false otherwise
+//
+// ```keyboard.pressed("shift+A")```
+//
+// **Step 3**: Stop listening to the keyboard
+//
+// ```keyboard.destroy()```
+//
+// NOTE: this library may be nice as standaline. independant from three.js
+// - rename it keyboardForGame
+//
+// # Code
+//
+/** @namespace */
+var THREEx;
+(function (THREEx) {
+    /**
+     * - NOTE: it would be quite easy to push event-driven too
+     *   - microevent.js for events handling
+     *   - in this._onkeyChange, generate a string from the DOM event
+     *   - use this as event name
+    */
+    var KeyboardState = (function () {
+        function KeyboardState(domElement) {
+            //this.domElement = domElement || document;
+            // to store the current state
+            //this.keyCodes = {};
+            //this.modifiers = {};
+            if (domElement === void 0) { domElement = document; }
+            var _this = this;
+            this.domElement = domElement;
+            this.keyCodes = {};
+            this.modifiers = {};
+            this._onBlur = function () {
+                for (var prop in _this.keyCodes) {
+                    _this.keyCodes[prop] = false;
+                }
+                for (var prop in _this.modifiers) {
+                    _this.modifiers[prop] = false;
+                }
+            };
+            /**
+             * to process the keyboard dom event
+            */
+            this._onKeyChange = function (event) {
+                // log to debug
+                //console.log("onKeyChange", event, event.keyCode, event.shiftKey, event.ctrlKey, event.altKey, event.metaKey)
+                // update this.keyCodes
+                var keyCode = event.keyCode;
+                var pressed = event.type === "keydown" ? true : false;
+                _this.keyCodes[keyCode] = pressed;
+                // update this.modifiers
+                _this.modifiers["shift"] = event.shiftKey;
+                _this.modifiers["ctrl"] = event.ctrlKey;
+                _this.modifiers["alt"] = event.altKey;
+                _this.modifiers["meta"] = event.metaKey;
+            };
+            // create callback to bind/unbind keyboard events
+            //var _this = this;
+            //this._onKeyDown = function (event) { _this._onKeyChange(event) }
+            //this._onKeyUp = function (event) { _this._onKeyChange(event) }
+            // bind keyEvents
+            this.domElement.addEventListener("keydown", this._onKeyChange, false);
+            this.domElement.addEventListener("keyup", this._onKeyChange, false);
+            // create callback to bind/unbind window blur event
+            //this._onBlur = () => {
+            //    for (var prop in this.keyCodes)
+            //        this.keyCodes[prop] = false;
+            //    for (var prop in this.modifiers)
+            //        this.modifiers[prop] = false;
+            //}
+            // bind window blur
+            window.addEventListener("blur", this._onBlur, false);
+        }
+        /**
+         * To stop listening of the keyboard events
+        */
+        KeyboardState.prototype.destroy = function () {
+            // unbind keyEvents
+            this.domElement.removeEventListener("keydown", this._onKeyChange, false);
+            this.domElement.removeEventListener("keyup", this._onKeyChange, false);
+            // unbind window blur event
+            window.removeEventListener("blur", this._onBlur, false);
+        };
+        /**
+         * query keyboard state to know if a key is pressed of not
+         *
+         * @param {String} keyDesc the description of the key. format : modifiers+key e.g shift+A
+         * @returns {Boolean} true if the key is pressed, false otherwise
+        */
+        KeyboardState.prototype.pressed = function (keyDesc) {
+            var keys = keyDesc.split("+");
+            for (var i = 0; i < keys.length; i++) {
+                var key = keys[i];
+                var pressed = false;
+                if (KeyboardState.MODIFIERS.indexOf(key) !== -1) {
+                    pressed = this.modifiers[key];
+                }
+                else if (Object.keys(KeyboardState.ALIAS).indexOf(key) !== -1) {
+                    pressed = this.keyCodes[KeyboardState.ALIAS[key]];
+                }
+                else {
+                    pressed = this.keyCodes[key.toUpperCase().charCodeAt(0)];
+                }
+                if (!pressed) {
+                    return false;
+                }
+            }
+            ;
+            return true;
+        };
+        /**
+         * return true if an event match a keyDesc
+         * @param  {KeyboardEvent} event   keyboard event
+         * @param  {String} keyDesc string description of the key
+         * @return {Boolean}         true if the event match keyDesc, false otherwise
+         */
+        KeyboardState.prototype.eventMatches = function (event, keyDesc) {
+            var aliases = KeyboardState.ALIAS;
+            var aliasKeys = Object.keys(aliases);
+            var keys = keyDesc.split("+");
+            // log to debug
+            // console.log("eventMatches", event, event.keyCode, event.shiftKey, event.ctrlKey, event.altKey, event.metaKey)
+            for (var i = 0; i < keys.length; i++) {
+                var key = keys[i];
+                var pressed = false;
+                if (key === "shift") {
+                    pressed = (event.shiftKey ? true : false);
+                }
+                else if (key === "ctrl") {
+                    pressed = (event.ctrlKey ? true : false);
+                }
+                else if (key === "alt") {
+                    pressed = (event.altKey ? true : false);
+                }
+                else if (key === "meta") {
+                    pressed = (event.metaKey ? true : false);
+                }
+                else if (aliasKeys.indexOf(key) !== -1) {
+                    pressed = (event.keyCode === aliases[key] ? true : false);
+                }
+                else if (event.keyCode === key.toUpperCase().charCodeAt(0)) {
+                    pressed = true;
+                }
+                if (!pressed) {
+                    return false;
+                }
+            }
+            return true;
+        };
+        return KeyboardState;
+    }());
+    KeyboardState.MODIFIERS = ["shift", "ctrl", "alt", "meta"];
+    KeyboardState.ALIAS = {
+        "left": 37, "up": 38, "right": 39, "down": 40,
+        "space": 32, "pageup": 33, "pagedown": 34, "tab": 9, "escape": 27,
+    };
+    THREEx.KeyboardState = KeyboardState;
+})(THREEx || (THREEx = {}));
+// This THREEx helper makes it easy to handle window resize.
+// It will update renderer and camera when window is resized.
+//
+// # Usage
+//
+// **Step 1**: Start updating renderer and camera
+//
+// ```var windowResize = THREEx.WindowResize(aRenderer, aCamera)```
+//    
+// **Step 2**: Start updating renderer and camera
+//
+// ```windowResize.stop()```
+// # Code
+//
+/** @namespace */
+var THREEx;
+(function (THREEx) {
+    /**
+     * Update renderer and camera when the window is resized
+     *
+     * @param {Object} renderer the renderer to update
+     * @param {Object} Camera the camera to update
+    */
+    function WindowResize(renderer, camera) {
+        var callback = function () {
+            // notify the renderer of the size change
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            // update the camera
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        };
+        // bind the resize event
+        window.addEventListener('resize', callback, false);
+        // return .stop() the function to stop watching window resize
+        return {
+            /**
+             * Stop watching window resize
+            */
+            stop: function () {
+                window.removeEventListener('resize', callback);
+            }
+        };
+    }
+    THREEx.WindowResize = WindowResize;
+})(THREEx || (THREEx = {}));
+// This THREEx helper makes it easy to handle the fullscreen API
+// * it hides the prefix for each browser
+// * it hides the little discrepencies of the various vendor API
+// * at the time of this writing (nov 2011) it is available in 
+//   [firefox nightly](http://blog.pearce.org.nz/2011/11/firefoxs-html-full-screen-api-enabled.html),
+//   [webkit nightly](http://peter.sh/2011/01/javascript-full-screen-api-navigation-timing-and-repeating-css-gradients/) and
+//   [chrome stable](http://updates.html5rocks.com/2011/10/Let-Your-Content-Do-the-Talking-Fullscreen-API).
+// # Code
+/** @namespace */
+var THREEx;
+(function (THREEx) {
+    var FullScreen;
+    (function (FullScreen) {
+        /**
+         * test if it is possible to have fullscreen
+         *
+         * @returns {Boolean} true if fullscreen API is available, false otherwise
+        */
+        function available() {
+            return true;
+            // return this._hasWebkitFullScreen || this._hasMozFullScreen;
+        }
+        FullScreen.available = available;
+        /**
+         * test if fullscreen is currently activated
+         *
+         * @returns {Boolean} true if fullscreen is currently activated, false otherwise
+        */
+        function activated() {
+            return document.webkitIsFullScreen;
+        }
+        FullScreen.activated = activated;
+        /**
+         * Request fullscreen on a given element
+         * @param {DomElement} element to make fullscreen. optional. default to document.body
+        */
+        function request(element) {
+            element = element || document.body;
+            element.webkitRequestFullScreen();
+        }
+        FullScreen.request = request;
+        /**
+         * Cancel fullscreen
+        */
+        function cancel() {
+            document.webkitCancelFullScreen();
+        }
+        FullScreen.cancel = cancel;
+        // internal functions to know which fullscreen API implementation is available
+        var _hasWebkitFullScreen = 'webkitCancelFullScreen' in document ? true : false;
+        var _hasMozFullScreen = 'mozCancelFullScreen' in document ? true : false;
+        /**
+         * Bind a key to renderer screenshot
+         * usage: THREEx.FullScreen.bindKey({ charCode : 'a'.charCodeAt(0) });
+        */
+        function bindKey(opts) {
+            opts = opts || {};
+            var charCode = opts.charCode || 'f'.charCodeAt(0);
+            var dblclick = opts.dblclick !== undefined ? opts.dblclick : false;
+            var element = opts.element;
+            var toggle = function () {
+                if (activated()) {
+                    cancel();
+                }
+                else {
+                    request(element);
+                }
+            };
+            var onKeyPress = function (event) {
+                if (event.which !== charCode)
+                    return;
+                toggle();
+            }; //.bind(this);
+            document.addEventListener('keypress', onKeyPress, false);
+            dblclick && document.addEventListener('dblclick', toggle, false);
+            return {
+                unbind: function () {
+                    document.removeEventListener('keypress', onKeyPress, false);
+                    dblclick && document.removeEventListener('dblclick', toggle, false);
+                }
+            };
+        }
+        FullScreen.bindKey = bindKey;
+    })(FullScreen = THREEx.FullScreen || (THREEx.FullScreen = {}));
+})(THREEx || (THREEx = {}));
+/// <reference path="THREEx.KeyboardState.ts" />
+/// <reference path="THREEx.WindowResize.ts" />
+/// <reference path="THREEx.FullScreen.ts" />
+/// <reference path="Billboard.ts" />
+/// <reference path="SoccerPitch.ts" />
+/*
+       Three.js "tutorials by example"
+       Author: Lee Stemkoski
+       Date: July 2013 (three.js v59dev)
+ */
+// MAIN
+var Main;
+(function (Main) {
+    // standard global variables
+    var container;
+    var scene;
+    var camera;
+    var renderer;
+    //var stats: Stats;
+    var keyboard = new THREEx.KeyboardState();
+    var clock = new THREE.Clock();
+    // custom global variables
+    var boomer; // animators
+    var man;
+    var controls;
+    // FUNCTIONS
+    function init() {
+        // SCENE
+        scene = new THREE.Scene();
+        // CAMERA
+        var SCREEN_WIDTH = window.innerWidth;
+        var SCREEN_HEIGHT = window.innerHeight;
+        var VIEW_ANGLE = 90;
+        var ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT;
+        var NEAR = 0.1;
+        var FAR = 1000;
+        camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+        scene.add(camera);
+        camera.position.z = SCREEN_HEIGHT / 2; //set(0, 150, 400);
+        camera.lookAt(scene.position);
+        // RENDERER
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+        container = document.getElementById('ThreeJS');
+        container.appendChild(renderer.domElement);
+        // EVENTS
+        THREEx.WindowResize(renderer, camera);
+        THREEx.FullScreen.bindKey({ charCode: 'm'.charCodeAt(0) });
+        // CONTROLS
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        // STATS
+        // stats = new Stats();
+        // stats.dom.style.position = 'absolute';
+        // stats.dom.style.bottom = '0px';
+        // stats.dom.style.zIndex = '100';
+        // container.appendChild(stats.dom);
+        //// LIGHT
+        //var light = new THREE.PointLight(0xffffff);
+        //light.position.set(0, 250, 0);
+        //scene.add(light);
+        //var directionalLight = new THREE.DirectionalLight(0xffffff);
+        //directionalLight.position.set(0, 0.7, 0.7);
+        //scene.add(directionalLight);
+        // FLOOR
+        var pitch = new _SoccerPitch(scene);
+        // SKYBOX/FOG
+        var skyBoxGeometry = new THREE.CubeGeometry(10000, 10000, 10000);
+        var skyBoxMaterial = new THREE.MeshBasicMaterial({ color: 0x9999ff, side: THREE.BackSide });
+        var skyBox = new THREE.Mesh(skyBoxGeometry, skyBoxMaterial);
+        // scene.add(skyBox);
+        scene.fog = new THREE.FogExp2(0x9999ff, 0.00025);
+        ////////////
+        // CUSTOM //
+        ////////////
+        // MESHES WITH ANIMATED TEXTURES!
+        man = new Billboard(scene);
+        var explosionTexture = new THREE.TextureLoader().load('images/explosion.jpg');
+        boomer = new TextureAnimator(explosionTexture, 4, 4, 16, 55); // texture, #horiz, #vert, #total, duration.
+        var explosionMaterial = new THREE.MeshBasicMaterial({ map: explosionTexture });
+        var cubeGeometry = new THREE.CubeGeometry(50, 50, 50);
+        var cube = new THREE.Mesh(cubeGeometry, explosionMaterial);
+        cube.position.set(0, 26, 0);
+        scene.add(cube);
+    }
+    Main.init = init;
+    function animate() {
+        requestAnimationFrame(animate);
+        render();
+        update();
+    }
+    Main.animate = animate;
+    function update() {
+        var delta = clock.getDelta();
+        boomer.update(1000 * delta);
+        man.update(1000 * delta);
+        if (keyboard.pressed("z")) {
+        }
+        controls.update();
+        // stats.update();
+        man.quaternion(camera.quaternion);
+    }
+    function render() {
+        renderer.render(scene, camera);
+    }
+})(Main || (Main = {}));
+Main.init();
+Main.animate();
 var Renderer;
 (function (Renderer) {
     var offsetX = 0;
